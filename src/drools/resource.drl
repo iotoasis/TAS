@@ -1,0 +1,28 @@
+//created on: 2017. 3. 30
+package drools
+
+rule "출장일비 없음"
+    when
+              bt:BusinessTrip (hour < 4.0 , name:name )
+       then
+              System.out.println ( name + " 님의 출장 시간은 "
+              + bt.getHour ( ) + " 시간 이므로 출장일비가 없습니다. ( 규정 : 출장일비 없음 ) " ) ;
+end
+
+rule "출장일비 C"
+       when
+              bt:BusinessTrip(hour>=4.0,hour<8.0,name:name)
+       then
+              System.out.println ( name + " 님의 출장 시간은 "
+              + bt.getHour ( ) + " 시간 이므로, 출장일비는 8만원 입니다. ( 규정 : 출장일비 C ) " ) ;
+end
+
+rule "출장일비 B"
+       when
+              bt:BusinessTrip(hour>=8.0 , hour < 12.0 , name :name)
+       then
+              System.out.println ( name + " 님의 출장 시간은 "
+              + bt.getHour ( ) + " 시간 이므로, 출장일비는 12만원 입니다. ( 규정 : 출장일비 B ) " ) ;
+end
+
+

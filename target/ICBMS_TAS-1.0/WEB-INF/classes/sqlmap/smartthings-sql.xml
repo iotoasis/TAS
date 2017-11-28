@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    <sqlMap namespace="smartthings-sql">
+    
+    
+      <select id="statusSelect"  parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+			select * from  tb_smartthings
+				where 1=1
+				<isNotEmpty  prepend="AND"  property="device_id" >
+					device_id = #device_id# 
+				</isNotEmpty>
+				<isNotEmpty  prepend="AND"  property="token" >
+					token = #token# 
+				</isNotEmpty>
+				<isNotEmpty  prepend="AND"  property="on" >
+					on = #on# 
+				</isNotEmpty>
+				<isNotEmpty  prepend="AND"  property="off" >
+					off = #off# 
+				</isNotEmpty>
+				<isNotEmpty  prepend="AND"  property="locked" >
+					locked = #locked# 
+				</isNotEmpty>
+				<isNotEmpty  prepend="AND"  property="unlocked" >
+					unlocked = #unlocked# 
+				</isNotEmpty>
+    </select>
+    
+    
+</sqlMap>

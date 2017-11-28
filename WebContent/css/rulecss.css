@@ -1,0 +1,56 @@
+@charset "UTF-8";
+body{font-family:'Nanum Barun Gothic'; font-size: 16px;background: #EEEEEE;}
+textarea{font-family:'Nanum Barun Gothic'}
+th{text-align: center;}
+ .img_td{
+     
+     -webkit-align-items: center;
+     align-items: center; /* 세로 중앙정렬 */
+  -webkit-justify-content: center;
+     justify-content: center; /* 가로 중앙정렬 */
+ }
+ 
+ .img_td img{  margin:auto; border:0px; display:block; }
+ 
+ 
+/* Rankup */
+.rankup{position:absolute;top:135px;right:0;line-height:1.6em}
+.ranklist{overflow:hidden;position:relative;width:169px;height:20px}
+.ranklist dt{font-size:0;line-height:0;text-indent:-1000em}
+.ranklist .more{display:none}
+.ranklist ol{float:left;clear:both;width:161px;background:url(http://img.naver.net/static/www/img/sp_main161101.png) no-repeat -421px -18px}
+.ranklist li{float:left;clear:both;position:relative;width:100%;height:20px}
+.ranklist a{display:block;padding:1px 0 0 25px;color:#fff}
+.ranklist a:hover{color:#fff;text-decoration:none}
+.ranklist li span{display:block;overflow:hidden;position:absolute;top:5px;right:36px;width:10px;height:10px;font-size:11px;font-family:'tahoma',sans-serif;color:#0e4800;letter-spacing:0;text-align:center}
+.ranklist li .rk{top:4px;right:6px;z-index:4;width:35px;line-height:10px}
+.ranklist li .tx{z-index:1;font-size:0}
+.rankup li .ic{z-index:3;background-image:url(http://img.naver.net/static/www/img/sp_main161101.png)}
+.rankup li.new .tx,.rankup li.new .ic{right:16px;width:29px}
+.rankup li.new .ic,.rankup li.new .rk{display:none}
+.rankup li.new .tx{top:-1px;height:14px;font-size:10px;font-family:tahoma;color:#f3fa00}
+.rankup li.up .ic{background-position:-70px -110px}
+.rankup li.dw .ic{background-position:-82px -110px}
+.rankup li.sm .ic{background-position:-94px -110px}
+.rankpop{clear:both;position:absolute;top:-10px;right:0;z-index:10;width:200px;border:1px solid #2db400;background-color:#fff}
+.rankpop dt{padding:14px 0 2px 19px;font-weight:bold;line-height:25px;color:#222;letter-spacing:-1px}
+.rankpop dd{clear:both}
+.rankpop ol{overflow:hidden;width:100%;padding-bottom:16px;background:url(http://img.naver.net/static/www/img/sp_main161101.png) no-repeat -406px -992px}
+.rankpop li{float:left;clear:both;position:relative;width:100%;height:24px}
+.rankpop li a{display:block;overflow:hidden;position:relative;z-index:2;width:103px;padding:2px 45px 1px 40px;color:#222;white-space:nowrap;cursor:pointer;text-overflow:ellipsis;zoom:1}
+.rankpop li a:hover{color:#222}
+.rankpop li.on a{font-weight:bold;letter-spacing:-1px}
+.rankpop li span{display:block;overflow:hidden;position:absolute;top:6px;right:30px;width:10px;height:11px;font-size:11px;font-family:'tahoma',sans-serif;color:#4a4a4a;letter-spacing:0;text-align:center}
+.rankpop li .rk{top:6px;right:0;z-index:4;width:35px;line-height:10px}
+.rankpop li .tx{font-size:0;line-height:0;text-indent:-1000em}
+.rankpop li .ic{z-index:3;background-image:url(http://img.naver.net/static/www/img/sp_main161101.png)}
+.rankpop li.new .tx,.rankpop li.new .ic{right:11px;width:26px}
+.rankpop li.new .ic,.rankpop li.new .rk{display:none}
+.rankpop li.new .tx{top:1px;right:9px;line-height:20px;font-size:10px;font-family:tahoma;font-weight:normal;color:#fb5151;text-indent:0}
+.rankpop li.up .ic{background-position:-70px -121px}
+.rankpop li.dw .ic{background-position:-82px -121px}
+.rankpop li.sm .ic{background-position:-94px -121px}
+.rankpop p a{font-size:.92em;color:#848689;letter-spacing:-1px}
+.rankpop .more{padding:1px 9px 1px 0;_padding:2px 9px 0 0;border-top:1px solid #e0e0e0;text-align:right}
+.ranklist li a span.ell,.rankpop li a span.ell{display:block;overflow:hidden;position:static;top:0;right:0;width:90px;height:auto;color:#fff;text-align:left;white-space:nowrap;text-overflow:ellipsis}
+.rankpop li a span.ell{color:#2f3743}

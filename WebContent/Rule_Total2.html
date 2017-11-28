@@ -1,0 +1,2285 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+<meta charset="UTF-8">
+
+<head>
+<!-- The jQuery library is a prerequisite for all jqSuite products -->
+<script type="text/javascript" src=".././js/jquery-1.12.4.min.js"></script>
+<!-- The link to the CSS that the grid needs -->
+	<link rel="stylesheet" href="../../css/jquery-ui.css">
+	
+	<script type="text/javascript" src="../../js/jquery.nicescroll.js"></script>
+	<script type="text/javascript" src="../../js/jquery-ui.min.js"></script>
+	<script type="text/javascript" src="../../js/jquery.ajax-cross-origin.min.js"></script><!-- 크로스도메인 해결 플러그인 -->
+	<script type="text/javascript">
+		
+		var polling = "";
+		var catagory = [];
+		var deid = [];
+		var date = new Date();
+		var d = new Date();
+		var deviceid = [];
+		var ae_id = [];
+		var url_ae = [];
+		var status_ae = [];
+		var polling = [];
+		var smd = [];
+		var Ip = location.hostname;
+		var rule = "";
+		var rule_sensor_list = "";
+		var rule_device_list = "";
+		var type = [];
+		var length_list;
+		var total_true = "";
+		var total_false = "";
+		var total_true_false = "";
+		var data_rule = [];
+		var device_condition_id = [];
+		var device_sensor_condition_name = [];
+		var device_condition_name = [];
+		var device_condition_place = [];
+		var device_condition_result = [];
+		var revise_id = "";
+		var sensor_device_list = [];
+		$("#sensor_device").html("");
+		
+		var auto_refresh = setInterval(
+				function rightAE(){
+					$.ajax({
+						type : "POST",
+						url : "/rule.do",
+						dataType : "json",
+						success : function(data) {
+							if (data != null && data != "null") {
+								for(i = 0; i < data.rows.length; i++){
+									$("#"+data.rows[i].id+"").text(data.rows[i].rule_status);
+								}
+							}else{
+								
+							}
+						}
+					});
+					
+				}, 3000);
+		
+		var auto_refresh = setInterval(
+				function triger_value(){
+					$.ajax({
+						type : "POST",
+						url : "/ruleinfo.do",
+						dataType : "json",
+						success : function(data) {
+							if (data != null && data != "null") {
+								for(i = 0; i < data.rows.length; i++){
+										$("#"+data.rows[i].triger_name+"_value").text(data.rows[i].triger_value);
+								}
+							}else{
+								
+							}
+						}
+					});
+					
+				}, 3000);
+		
+		function post_sm(url, daytime, device_type){
+			var d = new Date();
+			start_date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + (d.getDate());
+			end_date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + (d.getDate());
+			if(d.getMonth()+1<10){
+				getMonth="0"+(d.getMonth()+1)
+			}else{
+				getMonth=(d.getMonth()+1)
+			}
+			if(d.getDate()<10){
+				getDay="0"+d.getDate()
+			}else{
+				getDay=d.getDate()
+			}
+			if(d.getHours()<10){
+				var getHours="0"+d.getHours()
+			}else{
+				var getHours=d.getHours()
+			}
+			if(d.getMinutes()<10){
+				var getMinutes="0"+d.getMinutes()
+			}else{
+				var getMinutes=d.getMinutes()
+			}
+			if(d.getSeconds()<10){
+				var getSeconds="0"+d.getSeconds()
+			}else{
+				var getSeconds=d.getSeconds()
+			}
+			
+			day = d.getFullYear() + "" + getMonth + "" + getDay;
+			daytime = day + "T" + "" + getHours + "" + getMinutes + "" + getSeconds;
+			var first_value = $("#firstvalue").val();
+			if(first_value == "" && first_value == "null" && first_value == null){
+				first_value = "0";
+			}
+			if(device_type == "Sensor"){
+				$.ajax({
+					type : "POST",
+					url : Ip + "/postsm",
+					dataType : "json",
+					headers: {
+						'ae' : $("#DeviceId").val(),
+						'status' : first_value,
+						'url' : url,
+					    'X-M2M-Origin' : $("#DeviceId").val(),
+					    'X-M2M-RI' : $("#DeviceId").val(),
+					    'content_type': device_type,
+					    'polling' : $("#noti_url").val(),
+						'response_date' : daytime,
+				    },
+					success : function(data) {
+						if (data.result == "Success"){
+							location.reload();
+						}
+					}
+				});
+			}
+			else if(device_type == "Device"){
+				var url_status = url + "/status";
+				var url_execute = url + "/execute";
+				$.ajax({
+					type : "POST",
+					url : Ip + "/postsm",
+					dataType : "json",
+					headers: {
+						'ae' : $("#DeviceId").val(),
+						'status' : first_value,
+						'url' : url_status,
+					    'X-M2M-Origin' : $("#DeviceId").val(),
+					    'X-M2M-RI' : $("#DeviceId").val(),
+					    'content_type': device_type,
+					    'polling' : $("#noti_url").val(),
+						'response_date' : daytime,
+				    },
+					success : function(data) {
+						if (data.result == "Success"){
+							statusChk = "Y";
+							
+						}
+					}
+				});
+				post_sm_device_execute(first_value, url, device_type, daytime, url_execute);
+			}
+			
+		}
+		function post_sm_device_execute(first_value, url, device_type, daytime, url_execute){
+			$.ajax({
+				type : "POST",
+				url : Ip + "/postsm",
+				dataType : "json",
+				headers: {
+					'ae' : $("#DeviceId").val(),
+					'status' : first_value,
+					'url' : url_execute,
+				    'X-M2M-Origin' : $("#DeviceId").val(),
+				    'X-M2M-RI' : $("#DeviceId").val(),
+				    'content_type': device_type,
+				    'polling' : $("#noti_url").val(),
+					'response_date' : daytime,
+			    },
+				success : function(data) {
+					if (data.result == "Success"){
+						location.reload();
+						statusChk = "Y";
+					}
+				}
+			});
+		}
+		
+		function list_sensor_device(){
+			var list_sensor_device_id = "";
+			$("#sensor_device").html("");
+			$("#revise_sensor_device").html("");
+			$.ajax({
+				type : "POST",
+				url : "/rulesensordevice.do",
+				dataType : "json",
+				success : function(data) {
+					if (data != null && data != "null") {
+						for(i = 0, j = 0, k = 0; i < data.rows.length; i++){
+							if(data.rows[i].path_polling != "" && data.rows[i].path_polling != null && data.rows[i].path_polling != "null" || data.rows[i].device_type == "Sensor"){
+								list_sensor_device_id = list_sensor_device_id +"<tr>"
+								+"<td nowrap><input type=\"checkbox\" name=\"catagory\" id=\"catagory_list"+i+"\"/></td>"
+								+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\"deid"+i+"\" nowrap >"+data.rows[i].sensor_device_id +"</td>"
+								+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\"typeid"+i+"\" nowrap >"+data.rows[i].device_type +"</td>"
+								+"</tr>"
+						
+								
+							}
+							sensor_device_list[i] = data.rows[i]
+						}
+						$(list_sensor_device_id).appendTo("#sensor_device");
+						$(list_sensor_device_id).appendTo("#revise_sensor_device");
+					}
+					
+				}
+			});
+			
+		}
+		function list_rule(){
+			var id = "";
+			$.ajax({
+				type : "POST",
+				url : "/ruleinfo.do",
+				dataType : "json",
+				success : function(data) {
+					if (data != null && data != "null") {
+						for(i = 0, j = 0, k = 0; i < data.rows.length; i++){
+						
+						data_rule[i] = data.rows[i];
+						data[i] = data.rows[i];			
+						deid[i] = data.rows[i].triger_name;
+						url_ae[i] = data.rows[i].url;
+						ae_id[i] = data.rows[i].triger_name;
+						status_ae[i] = data.rows[i].triger_value;
+						length_list = data.rows.length;
+						type[i] = data.rows[i].device_type;
+									
+						}
+						
+					}else{
+						
+					}
+					leftAE(data_rule);
+					
+				}
+			});
+		}
+	function leftAE(data_rule){
+		var triger_result = [];
+		$.ajax({
+			type : "POST",
+			url : "/ruleinforesult.do",
+			dataType : "json",
+			success : function(data) {
+				if (data != null && data != "null") {
+					for(i = 0, j = 0, k = 0; i < data.rows.length; i++){
+					
+					data[i] = data.rows[i];			
+					deid[i] = data.rows[i].triger_name;
+					url_ae[i] = data.rows[i].url;
+					ae_id[i] = data.rows[i].triger_name;
+					status_ae[i] = data.rows[i].triger_value;
+					triger_result[i] = data.rows[i].triger_result;
+					type[i] = data.rows[i].device_type;
+					
+						if(data.rows[i].triger_result == "1" || data.rows[i].triger_result == "111" || data.rows[i].triger_result == "001"){
+							total_true = "True";
+						}
+						else{
+							total_false = "False";
+						}
+								
+					}
+					if(total_false == "False"){
+						total_true_false = "False";
+					}
+					else{
+						total_true_false = "True";
+					}
+					
+				}else{
+					
+				}
+				trigerresult(data_rule, polling, triger_result);
+				
+			}
+		});
+		
+	}
+	function trigerresult(data_rule, polling, triger_result){
+		var triger_result_name = [];
+		$.ajax({
+			type : "POST",
+			url : "/ruleresult.do",
+			dataType : "json",
+			success : function(data) {
+				if (data != null && data != "null") {
+					for(i = 0, j = 0, k = 0; i < data.rows.length; i++){
+						triger_result_name[i] = data.rows[i];
+					}
+				}
+				leftTitle(data_rule, polling, triger_result, triger_result_name);
+			}
+		});
+	}
+
+	function leftTitle(data_rule, polling, triger_result, triger_result_name){
+		$.ajax({
+			type : "POST",
+			url : "/rule.do",
+			dataType : "json",
+			success : function(data) {
+				if (data != null && data != "null") {
+
+					for(i = 0, j = 0, k = 0; i < data_rule.length; i++){
+						if(data_rule[i].device_type == "Sensor"){
+							device_condition_id[j] = data_rule[i].rule_mst_id;
+							device_sensor_condition_name[j] = data_rule[i].triger_name;
+							j++;
+						}
+						if(data_rule[i].device_type == "Device"){
+							device_condition_name[k] = data_rule[i].triger_name;
+							device_condition_place[k] = data_rule[i].rule_mst_place;
+							device_condition_result[k] = data_rule[i].triger_result;
+							k++;
+						}
+						
+						}
+					for(i = 0; i < data_rule.length; i++){
+					if(device_condition_id[i] == "undefined" || device_condition_id[i] == undefined){
+						device_condition_id[i] = "";
+					}
+					if(device_condition_name[i] == "undefined"|| device_condition_name[i] == undefined){
+						device_condition_name[i] = "";
+						device_condition_place[i] = "";
+						device_condition_result[i] = "";
+					}
+					}
+					
+					for(i = 0; i < data.rows.length; i++){
+						var rule_sensor_list = "";
+						var rule_sensor_mst_list = [];
+						var rule_device_list = "";
+						var rule_device_mst_list = [];
+						var rule_sensor_list1 = "";
+						var rule_sensor_list2 = "";
+						var rule_device_list1 = "";
+						var rule_device_list2 = "";
+						var rule_device_list3 = "";
+						var rule_device_list4 = "";
+						for(h = 0; h<data_rule.length; h++){
+							if(data.rows[i].rule_mst_id == data_rule[h].rule_mst_id){
+								var rank_triger = data_rule[h].triger_rank.split('0');
+								if(rank_triger[5] == "undefined" || rank_triger[5] == undefined){
+									rank_triger[5] = "";
+								}
+								rule_sensor_list1 = rule_sensor_list1
+								+ "<table width =\"330px\">"
+								+ "<tr>"
+								+"<td width = \"330px\" height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap>" 
+								+ data_rule[h].triger_name + "  " + data_rule[h].triger_sign + "  " + data_rule[h].triger_rule + "  " + data_rule[h].triger_operator + "</td>"
+								+ "</tr></table>"
+								
+								rule_sensor_list2 = rule_sensor_list2
+								+ "<table width =\"55px\">"
+								+ "<tr>"
+								+"<td width = \"55px\" height=\"25px\" id =\""+data_rule[h].triger_name+"_value\">"+data_rule[h].triger_value+"</td>"
+								+ "</tr></table>"
+								
+							}
+						}
+						for(var q = 0; q < triger_result_name.length; q++){
+							if(data.rows[i].rule_mst_id == triger_result_name[q].rule_mst_id){
+								var triger_result_value = "";
+								if(triger_result_name[q].triger_result != "0" && triger_result_name[q].triger_result != "" && triger_result_name[q].triger_result != "null" && triger_result_name[q].triger_result != null){
+									triger_result_value = "On";
+								}else{
+									triger_result_value = "Off";
+								}
+								rule_device_list1 = rule_device_list1
+								+ "<table width =\"165px\">"
+								+ "<tr>"
+								+"<td height=\"25px\">"+triger_result_name[q].triger_name+"</td>"
+								+ "</tr></table>"
+								
+								rule_device_list2 = rule_device_list2
+								+ "<table width =\"55px\">"
+								+ "<tr>"
+								+"<td height=\"25px\">"+triger_result_name[q].triger_result+"</td>"
+								+ "</tr></table>"
+								
+								rule_device_list3 = rule_device_list3
+								+ "<table width =\"110px\">"
+								+ "<tr>"
+								+"<td height=\"25px\" id = \""+triger_result_name[q].triger_name+"_triger_result_value\">"+triger_result_value+"</td>"
+								+ "</tr></table>"
+								
+								rule_device_list4 = rule_device_list4
+								+ "<table width =\"99px\">"
+								+ "<tr>"
+								+"<td height=\"25px\">"+data.rows[i].rule_mst_place+"</td>"
+								+ "</tr></table>"
+							}
+						}
+						
+						rule = rule + "<tr>"
+						+"<td height=\"25px\" nowrap><input type=\"checkbox\" name=\"catagory\" id=\"catagory"+i+"\"/></td>"
+						+"<td height=\"25px\">"+data.rows[i].id+"</td>"
+						+"<td height=\"25px\">"+data.rows[i].rule_mst_name+"</td>"
+						+"<td height=\"25px\" id =\""+data.rows[i].id+"\">"+data.rows[i].rule_status+"</td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"+rule_sensor_list1 +"</td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"+rule_sensor_list2 +"</td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"+rule_device_list1 +"</td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"+rule_device_list2 +"</td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"+rule_device_list3 +"</td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"+rule_device_list4 +"</td>"
+						+ "</tr>"
+						
+					}
+				}
+				
+				$(rule).appendTo("#rule_engine_list");
+			}
+		});
+
+	}
+
+	function getsm(deid, url_ae, ae_id, status_ae){
+		var content_type = "application/vnd.onem2m-res+json";
+		var text_over = "-";
+		var polling = "";
+		var url_excute;
+		for(i = 0; i < deid.length; i++){
+			$("#" + ae_id[i] + "_rtime").text(text_over);
+			$("#" + ae_id[i] + "_nowValue").text(text_over);
+			url_excute = url_ae[i].split('/');
+			var url_excute_polling = url_excute[7];
+			var url_excute_smd = url_excute[3] + "/" + url_excute[4];
+
+			if (url_excute_polling == "execute"){
+				var excute_polling = "y";
+			}
+			else{
+				var excute_polling = "";
+			}
+			$.ajax({
+				url : Ip + "/getsm",
+				type : "POST",
+				dataType : "json",
+				
+				headers: {
+						'content_type': content_type,
+						'url': url_ae[i],
+						'ae' : ae_id[i],
+						'X-M2M-Origin' : ae_id[i],
+					    'X-M2M-RI' : ae_id[i],
+					    'content_type': content_type,
+						'status' : status[i],
+						'id' : deid[i],
+						'polling' : excute_polling,
+				},
+				success : function(data) {
+					if (data.result == "Success"){
+						statusChk = "Y";
+						
+						if(data.rtime != null && data.rtime != "null" && data.rtime != "Loading" && $("#" + data.id + "_nowValue").text(data.value) != "null" && $("#" + data.id + "_nowValue").text(data.value) != null){
+							$("#" + data.id + "_rtime").text(data.rtime);
+						}else{
+							$("#" + data.id + "_rtime").text("no rtime or time over");
+						}
+						if(data.value != null && data.value != "null" && data.rtime != "Loading" && $("#" + data.id + "_nowValue").text(data.value) != "null" && $("#" + data.id + "_nowValue").text(data.value) != null){
+							$("#" + data.id + "_nowValue").text(data.value);
+						}else{
+							$("#" + data.id + "_nowValue").text("no value or time over");
+						}
+						
+					}else{
+						$("#" + data.id + "_rtime").text("no rtime or time over");
+						$("#" + data.id + "_nowValue").text("no value or time over");
+					}
+				}
+			});
+		}
+
+	}
+		$(document).ready(function() {
+
+			start_date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + (d.getDate());
+			end_date = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + (d.getDate());
+			if(d.getMonth()+1<10){
+				getMonth="0"+(d.getMonth()+1)
+			}else{
+				getMonth=(d.getMonth()+1)
+			}
+			if(d.getDate()<10){
+				getDay="0"+d.getDate()
+			}else{
+				getDay=d.getDate()
+			}
+			if(d.getHours()<10){
+				var getHours="0"+d.getHours()
+			}else{
+				var getHours=d.getHours()
+			}
+			if(d.getMinutes()<10){
+				var getMinutes="0"+d.getMinutes()
+			}else{
+				var getMinutes=d.getMinutes()
+			}
+			if(d.getSeconds()<10){
+				var getSeconds="0"+d.getSeconds()
+			}else{
+				var getSeconds=d.getSeconds()
+			}
+			
+			day = d.getFullYear() + "" + getMonth + "" + getDay;
+			$("#idlist").html("");
+			$("#pollinglist").html("");
+			$("#rule_engine_list").html("");
+			
+			daytime = day + "T" + "" + getHours + "" + getMinutes + "" + getSeconds;
+
+			$.ajax({
+				type : "POST",
+				url : "/ruleserver.do",
+				dataType : "json",
+				success : function(data){
+					if (data != null && data != "null") {
+					$("#serverlist").html("");
+					server = "<tr>"
+						+ "<td>SI IP</td>"
+						+ "<td><input type=\"text\" value=\""+data.rows[0].ip+"\" name=\"SiIp\" style=\"margin-left:11px; width:140px; height:20px; text-align:center;\" id =\"SiIp\"></td>"
+						+ "</tr>"
+						+ "<tr>"
+						+ "<td>Port</td>"
+						+ "<td><input type=\"text\" value=\""+data.rows[0].port+"\" name=\"Port\" style=\"margin-left:11px; width:140px; height:20px; text-align:center;\" id =\"Port\"></td>"
+						+ "</tr>"
+						+ "<tr>"
+						+ "<td>Server Name</td>"
+						+ "<td><input type=\"text\" value=\""+data.rows[0].server_name+"\" name=\"Sname\" style=\"margin-left:11px; width:140px; height:20px; text-align:center;\" id =\"Sname\"></td>"
+						+ "</tr>"
+						+ "<tr>"
+						+ "<td>IN/CSE</td>"
+						+ "<td><input type=\"text\" value=\""+data.rows[0].in_cse+"\" name=\"IC\" style=\"margin-left:11px; width:140px; height:20px; text-align:center;\" id =\"IC\"></td>"
+						+ "</tr>"
+						+ "<tr>"
+						+ "<td>Rule_name</td>"
+						+ "<td><input type=\"text\" value=\""+data.rows[0].rule_name+"\" name=\"RName\" style=\"margin-left:11px; width:140px; height:20px; text-align:center;\" id =\"RName\"></td>"
+						+ "</tr>"
+					
+					$(server).appendTo("#serverlist");
+					}
+				}
+			});
+
+			$("#deletebutton").on({
+				click:function(){
+					$.ajax({
+						type : "POST",
+						url : "/rule.do",
+						dataType : "json",
+						success : function(data){
+							if (data != null && data != "null") {
+								
+								for(i = 0; i < data.rows.length; i++){
+									deid[i] = data.rows[i].id;
+								}
+							}
+							deletesmdata(deid);
+						}
+					});
+				}});
+			
+			$("#insertbutton_AE_DB").on({
+				click:function(){
+					$.ajax({
+						type : "POST",
+						url : "/rule.do",
+						dataType : "json",
+						success : function(data){
+							if (data != null && data != "null") {
+								
+								for(i = 0; i < data.rows.length; i++){
+									deid[i] = data.rows[i].id;
+								}
+							}
+						}
+					});
+					server_data(daytime);
+				}
+			});
+			
+			$("#insertbutton_rule").on({
+				click:function(){
+					if($("#rule_title").val() != null && $("#rule_title").val() != "null" && $("#rule_title").val() != undefined && $("#rule_title").val() != "undefined" && $("#rule_title").val() != ""){
+						var check_rule = "";
+						var ruls_status = "False";
+						var rule_value = "0";
+						$.ajax({
+							type : "POST",
+							url : "/ruleInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_name : $("#rule_title").val(),
+								rule_mst_place : $("#rule_place").val(),
+								rule_status : ruls_status,
+								ruls_value : rule_value
+							},
+							success : function(data){
+								load_rule();
+								check_rule = "1";
+								if(check_rule == "1"){
+									
+								}
+								
+							}
+
+						});
+						
+					}else{
+						alert("상황 제목을 입력해 주세요");
+					}
+				}
+			});
+			
+			
+			
+			$("#update_setting").on({
+				click:function(){
+					if($("#SiIp").val() != null && $("#SiIp").val() !="null" && $("#SiIp").val() != ""){
+						$.ajax({
+							type : "POST",
+							url : "/ruleserverUpdate.do",
+							dataType : "json",
+							data:{
+								ip : $("#SiIp").val(),
+								port : $("#Port").val(),
+								server_name : $("#Sname").val(),
+								in_cse : $("#IC").val(),
+								rule_name : $("#RName").val()
+							},
+							success : function(data){
+								if (data.result == "Success"){
+									statusChk = "Y";
+								}
+							}
+						});
+						alert("변경되었습니다.");
+						location.reload();
+					}
+					else{
+						alert("필수(IP)를 입력해주세요.")
+					}
+				}});
+			list_rule();
+			list_sensor_device();
+			
+		});
+		
+		function server_data(daytime){
+			$.ajax({
+				type : "POST",
+				url : "/ruleserver.do",
+				dataType : "json",
+				success : function(data){
+					if (data != null && data != "null") {
+						for(i = 0; i < data.rows.length; i++){
+							var url = "http://"+data.rows[i].ip+":"+data.rows[i].port+"/"+data.rows[i].in_cse+"/";
+						}
+						insert_AE_DB(url, daytime);
+					}
+
+				}
+			});
+		}
+		
+		function AEdelete(deid){
+			var check= "0";
+			for (j=0; j<i+1; j++){
+				if($(":checkbox[id='catagory"+j+"']:checked").val()=="on"){
+					id =  deid[j];
+					$.ajax({
+						type : "POST",
+						url : "/ruleDelete.do",
+						dataType : "json",
+						data : {
+							id : deid[j],
+						},
+						success : function(data) {
+							if (data.result == "Success"){
+								statusChk = "Y";
+							}
+						}
+					});
+					check = "1";
+				}
+			}
+			reLoad(check)
+		}
+		
+		function reLoad(check){
+
+			location.reload();
+		}
+		
+		function deletesmdata(deid){
+			for (j=0; j<i+1; j++){
+				if($(":checkbox[id='catagory"+j+"']:checked").val()=="on"){
+					var k = j; 
+					$.ajax({
+						type : "POST",
+						url : "rule.do",
+						dataType : "json",
+						data : {
+							id : deid[j],
+						},
+						success : function(data) {
+								deletesm(deid, data, k);
+						}
+					});
+				}
+			}
+
+		}
+		
+		function deletesm(deid, data, k){
+			var content_type = "application/vnd.onem2m-res+json";
+			url_excute = data.rows[0].url.split('/');
+			var url_excute_polling = url_excute[7];
+			var url_excute_smd = url_excute[3] + "/" + url_excute[4];
+			var url_delete = url = url_excute[0] + "//" + url_excute[2] + "/" + url_excute[3] + "/" + url_excute[4] + "/" + url_excute[5];
+			if (url_excute_polling == "execute"){
+				var excute_polling = "y";
+			}
+			else{
+				var excute_polling = "";
+			}
+			AEdelete(deid);
+		}
+		
+		function insert_AE_DB(url, daytime){
+			url = url + $("#DeviceId").val();
+			var pathpolling = url + "/pollingchannel/pcu";
+			url = url + "/" +$("#function_name").val();
+			var noti_url = Ip + "/" + $("#noti_url").val();
+			var first_value = $("#firstvalue").val();
+			if(first_value == "" && first_value == "null" && first_value == null){
+				first_value = "0";
+			}
+			if($(":radio[id='sensor']:checked").val()){
+				url = url + "/status";
+				var device_type = "Sensor";
+				$.ajax({
+					type : "POST",
+					url : "/rulesensordeviceInsert.do",
+					dataType : "json",
+					data : {
+						sensor_device_id : $("#DeviceId").val(),
+						device_type : device_type,
+						function_name : $("#function_name").val(),
+						origin : $("#origin").val(),
+						value : first_value,
+						url : url,
+						noti_url : $("#noti_url").val()
+					},
+					success : function(data) {
+						if (data.result == "Success"){
+							statusChk = "Y";
+							post_sm(url, daytime, device_type);
+						}
+					}
+				});
+				alert("Sensor등록되었습니다.");
+			}
+			else if($(":radio[id='device']:checked").val()){
+						var url_status = url + "/status";
+						var device_type = "Device";
+						$.ajax({
+							type : "POST",
+							url : "/rulesensordeviceInsert.do",
+							dataType : "json",
+							data : {
+								sensor_device_id : $("#DeviceId").val(),
+								device_type : device_type,
+								function_name : $("#function_name").val(),
+								origin : $("#origin").val(),
+								value : first_value,
+								url : url_status,
+								noti_url : noti_url
+							},
+							success : function(data) {
+								if (data.result == "Success"){
+									statusChk = "Y";
+									insertExecute(url, daytime, pathpolling, noti_url, first_value);
+								}
+							}
+						});
+				
+				alert("Device status/execute등록되었습니다.");
+			}
+			$('.layer').fadeOut();
+			
+			
+		}
+		
+		function insertExecute(url, daytime, pathpolling, noti_url, first_value){
+			var url_execute = url + "/execute";
+			var device_type = "Device";
+			$.ajax({
+				type : "POST",
+				url : "/rulesensordeviceInsert.do",
+				dataType : "json",
+				data : {
+					sensor_device_id : $("#DeviceId").val(),
+					device_type : device_type,
+					function_name : $("#function_name").val(),
+					origin : $("#origin").val(),
+					value : first_value,
+					url : url_execute,
+					noti_url : noti_url,
+					path_polling : pathpolling,
+				},
+				success : function(data) {
+					if (data.result == "Success"){
+						statusChk = "Y";
+						post_sm(url, daytime, device_type);
+					}
+				}
+			});
+		}
+		
+		function load_rule(){
+			var load_rule_data_mst = "";
+			var load_rule_data_mst_id = "";
+			$.ajax({
+				type : "POST",
+				url : "/rule.do",
+				dataType : "json",
+				success : function(data){
+					if (data != null && data != "null") {
+						for(i = 0; i < data.rows.length; i++){
+							load_rule_data_mst = data.rows[i].rule_mst_id;
+						}
+					}
+					load_rule_data_mst_id = load_rule_data_mst.split('e'); //value 받은 값 배열로 변환
+					rule_info_insert(load_rule_data_mst_id);
+				}
+			});
+		}
+		function rule_info_insert(load_rule_data_mst_id){
+			for(i = 0; i < sensor_device_list.length; i++){
+				if($("#rule_value"+i+"").val()!= null && $("#rule_value"+i+"").val()!="null"){
+					var rank = "";
+					var rule_value = $("#rule_value"+i+"").val();
+					if($("#rule_value"+i+"").val() == ""){
+						rule_value = "0";
+					}
+					var triger_value = "0";
+					if($("#choise_AND_OR"+i+"").val() == "AND"){
+						rank = "rank000001";
+						$.ajax({
+							type : "POST",
+							url : "/ruleinfoInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : "rule"+load_rule_data_mst_id[1],
+								rule_detail_id : "detail"+load_rule_data_mst_id[1],
+								triger_id :  "triger"+load_rule_data_mst_id[1],
+								sensor_device_id : sensor_device_list[i].id,
+								triger_rule : rule_value,
+								triger_name :$("#"+sensor_device_list[i].sensor_device_id+"_rule"+i).text(),
+								triger_sign : $("#choise_value"+i+"").val(),
+								triger_value : triger_value,
+								triger_operator : $("#choise_AND_OR"+i+"").val(),
+								triger_rank : rank,
+								url : sensor_device_list[i].url,
+								origin : sensor_device_list[i].origin,
+								function_name : sensor_device_list[i].function_name,
+								device_type : sensor_device_list[i].device_type
+							},
+							success : function(data){
+								
+							}
+						});
+					}
+					if($("#choise_AND_OR"+i+"").val() == "OR"){
+						rank = "rank000002";
+						$.ajax({
+							type : "POST",
+							url : "/ruleinfoInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : "rule"+load_rule_data_mst_id[1],
+								rule_detail_id : "detail"+load_rule_data_mst_id[1],
+								triger_id :  "triger"+load_rule_data_mst_id[1],
+								sensor_device_id : sensor_device_list[i].id,
+								triger_rule : rule_value,
+								triger_name :$("#"+sensor_device_list[i].sensor_device_id+"_rule"+i).text(),
+								triger_sign : $("#choise_value"+i+"").val(),
+								triger_value : triger_value,
+								triger_operator : $("#choise_AND_OR"+i+"").val(),
+								triger_rank : rank,
+								url : sensor_device_list[i].url,
+								origin : sensor_device_list[i].origin,
+								function_name : sensor_device_list[i].function_name,
+								device_type : sensor_device_list[i].device_type
+							},
+							success : function(data){
+							}
+						});
+					}
+					if($("#choise_AND_OR"+i+"").val() == "" || $("#choise_AND_OR"+i+"").val() == null || $("#choise_AND_OR"+i+"").val() == "null"){
+						rank = "rank000003";
+						$.ajax({
+							type : "POST",
+							url : "/ruleinfoInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : "rule"+load_rule_data_mst_id[1],
+								rule_detail_id : "detail"+load_rule_data_mst_id[1],
+								triger_id :  "triger"+load_rule_data_mst_id[1],
+								sensor_device_id : sensor_device_list[i].id,
+								triger_rule : rule_value,
+								triger_name :$("#"+sensor_device_list[i].sensor_device_id+"_rule"+i).text(),
+								triger_sign : $("#choise_value"+i+"").val(),
+								triger_value : triger_value,
+								triger_operator : $("#choise_AND_OR"+i+"").val(),
+								triger_rank : rank,
+								url : sensor_device_list[i].url,
+								origin : sensor_device_list[i].origin,
+								function_name : sensor_device_list[i].function_name,
+								device_type : sensor_device_list[i].device_type
+							},
+							success : function(data){
+							}
+						});
+					}
+					
+				}
+			}
+			rule_result_insert(load_rule_data_mst_id, rule_value);
+		}
+		
+		function rule_result_insert(load_rule_data_mst_id){
+			var chack_sensor_device_list_name = "";
+			for(i = 0; i < sensor_device_list.length; i++){
+				if(chack_sensor_device_list_name != sensor_device_list[i].sensor_device_id){
+					chack_sensor_device_list_name = sensor_device_list[i].sensor_device_id;
+					var triger_on_off = $("#"+sensor_device_list[i].sensor_device_id+"_result_value").val();
+					var result_value = "0";
+					var triger_on_off_value = [];
+						if($("#"+sensor_device_list[i].sensor_device_id+"_result").html() != null && $("#"+sensor_device_list[i].sensor_device_id+"_result").html() !="null" && $("#"+sensor_device_list[i].sensor_device_id+"_result").html() != ""){
+							
+							if($("#"+sensor_device_list[i].sensor_device_id+"_result_value").val() == ""){
+								triger_on_off = "0";
+							}
+							if(triger_on_off != ""){
+								triger_on_off_value = triger_on_off.split('/');
+							}
+							$.ajax({
+								type : "POST",
+								url : "/ruleresultInsert.do",
+								dataType : "json",
+								data:{
+									rule_mst_id : "rule"+load_rule_data_mst_id[1],
+									rule_detail_id : "detail"+load_rule_data_mst_id[1],
+									triger_id :"result"+load_rule_data_mst_id[1],
+									triger_name :$("#"+sensor_device_list[i].sensor_device_id+"_result").html(),
+									triger_on : triger_on_off_value[0],
+									triger_off : triger_on_off_value[1],
+									triger_result : result_value,
+								},
+								success : function(data){
+									
+									location.reload();
+								}
+							});
+						}
+				}
+				
+			}
+		}
+	function condition(){
+		//조건
+		var condition_value = "";
+		for(i = 0; i < sensor_device_list.length; i++){
+			var chack_sensor_device_list_id = "";
+			if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+				for(j = 0; j < sensor_device_list.length; j++){
+					if($("#"+sensor_device_list[j].sensor_device_id+"_rule"+j).html() == sensor_device_list[i].sensor_device_id){
+						chack_sensor_device_list_id = "1";
+					}
+				}
+				if(chack_sensor_device_list_id != "1"){
+					condition_value = condition_value +"<tr>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].sensor_device_id+"_rule"+i+"\" nowrap >"+sensor_device_list[i].sensor_device_id+"</td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+					+"<select id = \"choise_value"+i+"\">"
+					+"<option value = \"\"> 선택 </option>"
+					+"<option value = \"<\"> < </option>"
+					+"<option value = \">\"> > </option>"
+					+"<option value = \"<=\"> <= </option>"
+					+"<option value = \">=\"> >= </option>"
+					+"<option value = \"=\"> = </option>"
+					+"/<select>"
+					+"</td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+					+"<input type=\"text\" id=\"rule_value"+i+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+					+"<select id =\"choise_AND_OR"+i+"\">"
+					+"<option value = \"\"> 선택 </option>"
+					+"<option value = \"AND\"> AND </option>"
+					+"<option value = \"OR\"> OR </option>"
+					+"/<select>"
+					+"</td>"
+					+"</tr>"
+				}
+			}
+		}
+		$(condition_value).appendTo("#condition_list");
+		
+	}
+	
+	function revise_condition(){
+		//조건
+		var revise_condition_list = "";
+		for(i = 0; i < sensor_device_list.length; i++){
+			var chack_sensor_device_list_id = "";
+			if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+				for(j = 0; j < sensor_device_list.length; j++){
+					if($("#"+sensor_device_list[j].id+"_rule_update").html() == sensor_device_list[i].sensor_device_id){
+						chack_sensor_device_list_id = "1";
+					}
+				}
+				if(chack_sensor_device_list_id != "1"){
+					revise_condition_list = revise_condition_list +"<tr>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].id+"_rule_update\" nowrap >"+sensor_device_list[i].sensor_device_id+"</td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+					+"<select id = \"choise_value_update"+sensor_device_list[i].sensor_device_id+"\">"
+					+"<option value = \"\"> 선택 </option>"
+					+"<option value = \"<\"> < </option>"
+					+"<option value = \">\"> > </option>"
+					+"<option value = \"<=\"> <= </option>"
+					+"<option value = \">=\"> >= </option>"
+					+"<option value = \"=\"> = </option>"
+					+"/<select>"
+					+"</td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+					+"<input type=\"text\" id=\"rule_value_update"+i+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+					+"<select id =\"choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"\">"
+					+"<option value = \"\"> 선택 </option>"
+					+"<option value = \"AND\"> AND </option>"
+					+"<option value = \"OR\"> OR </option>"
+					+"/<select>"
+					+"</td>"
+					+"</tr>"
+				}
+				
+			}
+		}
+		$(revise_condition_list).appendTo("#revise_condition_list");
+		
+	}
+	
+	function result(){
+		//결과
+		var result_value = "";
+		for(i = 0; i < sensor_device_list.length; i++){
+			var chack_sensor_device_list_id = "";
+			if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+				for(j = 0; j < sensor_device_list.length; j++){
+					if($("#"+sensor_device_list[j].sensor_device_id+"_result").html() == sensor_device_list[i].sensor_device_id){
+						chack_sensor_device_list_id = "1";
+					}
+				}
+				if(chack_sensor_device_list_id != "1"){
+					result_value = result_value +"<tr>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].sensor_device_id+"_result\" nowrap >"+sensor_device_list[i].sensor_device_id+"</td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\"  nowrap >"
+					+"<input type=\"text\" placeholder = \"On/Off\" id=\""+sensor_device_list[i].sensor_device_id+"_result_value\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+					+"</tr>"
+				}
+			}
+		}
+		$(result_value).appendTo("#result_list");
+		
+	}
+	
+	function revise_result2(){
+		//결과
+		var revise_result = "";
+		for(i = 0; i < sensor_device_list.length; i++){
+			var chack_sensor_device_list_id = "";
+			if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+				for(j = 0; j < sensor_device_list.length; j++){
+					if($("#"+sensor_device_list[j].sensor_device_id+"_result_update").html() == sensor_device_list[i].sensor_device_id){
+						chack_sensor_device_list_id = "1";
+					}
+				}
+				if(chack_sensor_device_list_id != "1"){
+					revise_result = revise_result +"<tr>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].sensor_device_id+"_result_update\" nowrap >"+sensor_device_list[i].sensor_device_id+"</td>"
+					+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\"  nowrap >"
+					+"<input type=\"text\" placeholder = \"On/Off\" id=\""+sensor_device_list[i].sensor_device_id+"_result_value_update\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+					+"</tr>"
+				}
+				
+				
+			}
+		}
+		$(revise_result).appendTo("#revise_result_list");
+		
+	}
+
+ 	function delete_info(){
+ 		var delete_info = [];
+ 		$.ajax({
+			type : "POST",
+			url : "/rule.do",
+			dataType : "json",
+			success : function(data){
+				for(i = 0; i < data.rows.length; i++){
+		 			if($(":checkbox[id='catagory"+i+"']:checked").val()=="on"){
+		 				delete_info[i] = data.rows[i].rule_mst_id;
+		 	 		}
+		 		}
+				mst_delete(delete_info);
+			}
+		}); 		
+ 	}
+	function mst_delete(delete_info){
+		for(i = 0; i < delete_info.length; i++){
+			if($(":checkbox[id='catagory"+i+"']:checked").val()=="on"){
+				$.ajax({
+					type : "POST",
+					url : "/ruleDelete.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : delete_info[i],
+					},
+					success : function(data){
+						info_delete(delete_info);
+					}
+				});
+			}
+		}
+	}
+	function info_delete(delete_info){
+		for(i = 0; i < delete_info.length; i++){
+			if($(":checkbox[id='catagory"+i+"']:checked").val()=="on"){
+				$.ajax({
+					type : "POST",
+					url : "/ruleinfoDelete.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : delete_info[i],
+					},
+					success : function(data){
+						result_delete(delete_info);
+					}
+				});
+			}
+		}
+	}
+	function result_delete(delete_info){
+		for(i = 0; i < delete_info.length; i++){
+			if($(":checkbox[id='catagory"+i+"']:checked").val()=="on"){
+				$.ajax({
+					type : "POST",
+					url : "/ruleresultDelete.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : delete_info[i],
+					},
+					success : function(data){
+				
+						location.reload();
+					}
+				});
+			}
+		}
+	}
+
+
+function restart(){
+	$.ajax({
+		type : "POST",
+		url : Ip + "/restartpolling",
+		dataType : "json",
+		success : function(data) {
+		}
+	});
+}
+/*---------------------------레이어 관리--------------------------------------------------*/
+
+		function layer_open(el){
+
+			var temp = $('#' + el);
+			var bg = temp.prev().hasClass('bg');	//dimmed 레이어를 감지하기 위한 boolean 변수
+
+			if(bg){
+				$('.layer').fadeIn();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다. 
+			}else{
+				temp.fadeIn();
+			}
+
+			// 화면의 중앙에 레이어를 띄운다.
+			if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');
+			else temp.css('top', '0px');
+			if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');
+			else temp.css('left', '0px');
+
+			temp.find('a.cbtn').click(function(e){
+				if(bg){
+					$('.layer').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			temp.find('a.cbtn2').click(function(e){
+				if(bg){
+					$('.layer').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			$('.layer .bg').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+				$('.layer').fadeOut();
+				e.preventDefault();
+			});
+
+		}	
+		
+		function layer_open3(el){
+
+			var temp = $('#' + el);
+			var bg = temp.prev().hasClass('bg3');	//dimmed 레이어를 감지하기 위한 boolean 변수
+
+			if(bg){
+				$('.layer3').fadeIn();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다. 
+			}else{
+				temp.fadeIn();
+			}
+
+			// 화면의 중앙에 레이어를 띄운다.
+			if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');
+			else temp.css('top', '0px');
+			if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');
+			else temp.css('left', '0px');
+
+			temp.find('a.cbtn3').click(function(e){
+				if(bg){
+					$('.layer3').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			temp.find('a.cbtn23').click(function(e){
+				if(bg){
+					$('.layer3').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			$('.layer3 .bg3').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+				$('.layer3').fadeOut();
+				e.preventDefault();
+			});
+
+		}	
+
+		function layer_open4(el){
+			$("#condition_list").html("");
+			$("#result_list").html("");
+			$("#rule_title").val("");
+			$("#rule_place").val("");
+			$("#sensor_device").html("");
+			list_sensor_device();
+			var temp = $('#' + el);
+			var bg = temp.prev().hasClass('bg4');	//dimmed 레이어를 감지하기 위한 boolean 변수
+
+			if(bg){
+				$('.layer4').fadeIn();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다. 
+			}else{
+				temp.fadeIn();
+			}
+
+			// 화면의 중앙에 레이어를 띄운다.
+			if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');
+			else temp.css('top', '0px');
+			if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');
+			else temp.css('left', '0px');
+
+			temp.find('a.cbtn4').click(function(e){
+				if(bg){
+					$('.layer4').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			temp.find('a.cbtn24').click(function(e){
+				if(bg){
+					$('.layer4').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			$('.layer4 .bg4').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+				$('.layer4').fadeOut();
+				e.preventDefault();
+			});
+
+		}	
+		// 상황 수정 
+		function layer_open5(el){
+			$("#condition_list").html("");
+			$("#result_list").html("");
+			$("#rule_title").val("");
+			$("#rule_place").val("");
+			$("#sensor_device").html("");
+			list_sensor_device();
+			var revise_info = "";
+			var revise_place = "";
+			var revise_data = [];
+			$("#revise_condition_list").html("");
+			$("#revise_result_list").html("");
+			$.ajax({
+				type : "POST",
+				url : "/rule.do",
+				dataType : "json",
+				success : function(data){
+					for(i = 0; i < data.rows.length; i++){
+			 			if($(":checkbox[id='catagory"+i+"']:checked").val()=="on"){
+			 				revise_data[i] = data.rows[i];
+			 				revise_id = data.rows[i].rule_mst_id;
+			 				revise_info = data.rows[i].rule_mst_name;
+			 				revise_place = data.rows[i].rule_mst_place;
+			 				
+			 	 		}
+			 		}
+					$('#revice_rule_title').val(revise_info);
+					$('#revice_rule_place').val(revise_place);
+					revise_sensor_device_info(revise_data, revise_id);
+				//	mst_delete(revise_info);
+				}
+			}); 
+			
+			var temp = $('#' + el);
+			var bg = temp.prev().hasClass('bg5');	//dimmed 레이어를 감지하기 위한 boolean 변수
+
+			if(bg){
+				$('.layer5').fadeIn();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다. 
+			}else{
+				temp.fadeIn();
+			}
+
+			// 화면의 중앙에 레이어를 띄운다.
+			if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');
+			else temp.css('top', '0px');
+			if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');
+			else temp.css('left', '0px');
+
+			temp.find('a.cbtn5').click(function(e){
+				if(bg){
+					$('.layer5').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			temp.find('a.cbtn25').click(function(e){
+				if(bg){
+					$('.layer5').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+				}else{
+					temp.fadeOut();
+				}
+				e.preventDefault();
+			});
+			$('.layer5 .bg5').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+				$('.layer5').fadeOut();
+				e.preventDefault();
+			});
+			
+			
+		}
+		
+		function revise_sensor_device_info(revise_data, revise_id){
+			var revise_condition_list = "";
+			
+			$.ajax({
+				type : "POST",
+				url : "/ruleinfo.do",
+				dataType : "json",
+				success : function(data){
+					for(i = 0; i < data.rows.length; i++){
+							if(revise_id == data.rows[i].rule_mst_id && data.rows[i].rule_mst_id != "null" && data.rows[i].rule_mst_id != "" && data.rows[i].rule_mst_id != null){
+									
+									revise_condition_list = revise_condition_list +"<tr>"
+									+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+data.rows[i].sensor_device_id+"_rule_update\" nowrap >"+data.rows[i].triger_name+"</td>"
+									+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+									+"<select id = \"choise_value_update"+data.rows[i].triger_name+"\">"
+									+"<option value = \""+data.rows[i].triger_sign+"\"> "+data.rows[i].triger_sign+" </option>"
+									+"<option value = \"\"> 선택 </option>"
+									+"<option value = \"<\"> < </option>"
+									+"<option value = \">\"> > </option>"
+									+"<option value = \"<=\"> <= </option>"
+									+"<option value = \">=\"> >= </option>"
+									+"<option value = \"=\"> = </option>"
+									+"/<select>"
+									+"</td>"
+									+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+									+"<input type=\"text\" id=\"rule_value_update"+data.rows[i].sensor_device_id+"\" value = \""+data.rows[i].triger_rule+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+									+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+									+"<select id =\"choise_AND_OR_update"+data.rows[i].triger_name+"\">"
+									+"<option value = \""+data.rows[i].triger_operator+"\"> "+data.rows[i].triger_operator+" </option>"
+									+"<option value = \"\"> 선택 </option>"
+									+"<option value = \"AND\"> AND </option>"
+									+"<option value = \"OR\"> OR </option>"
+									+"/<select>"
+									+"</td>"
+									+"</tr>"
+							}
+			 			
+					}
+					
+					$(revise_condition_list).appendTo("#revise_condition_list");
+					revise_result(revise_data, revise_id);
+					
+				}
+			});
+				
+		}
+		function revise_result(revise_data, revise_id){
+			var revise_result_list = "";
+			$.ajax({
+				type : "POST",
+				url : "/ruleresult.do",
+				dataType : "json",
+				success : function(data){
+					for(i = 0; i < data.rows.length; i++){
+							if(revise_id == data.rows[i].rule_mst_id && data.rows[i].rule_mst_id != "null" && data.rows[i].rule_mst_id != "" && data.rows[i].rule_mst_id != null){
+								
+									revise_result_list = revise_result_list +"<tr>"
+									+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+data.rows[i].triger_name+"_result_update\" nowrap >"+data.rows[i].triger_name+"</td>"
+									+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\"  nowrap >"
+									+"<input type=\"text\" placeholder = \"On/Off\" id=\""+data.rows[i].triger_name+"_result_value_update\" value = \""+data.rows[i].triger_result+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+									+"</tr>"
+								}
+								
+							}
+					$(revise_result_list).appendTo("#revise_result_list");
+					}
+					
+			});
+		}
+		
+		function update_info_rule_mst(){
+			var rule_data_info = [];
+			var rule_data_total = [];
+			$.ajax({
+				type : "POST",
+				url : "/rulesensordevice.do",
+				dataType : "json",
+				success : function(data){
+					for(i = 0; i < data.rows.length; i++){
+						if(revise_id == data.rows[i].rule_mst_id){
+							rule_data_info[i] = data.rows[i];
+						}else{
+							rule_data_info[i] = "";
+						}
+						rule_data_total[i] = data.rows[i];
+					}
+					update_button_rule_mst(rule_data_info, rule_data_total);
+				}
+			});
+			
+		}
+		function update_button_rule_mst(rule_data_info, rule_data_total){
+			$.ajax({
+				type : "POST",
+				url : "/Updaterulemst.do",
+				dataType : "json",
+				data:{
+					rule_mst_id : revise_id,
+					rule_mst_name : $("#revice_rule_title").val(),
+					rule_mst_place : $("#revice_rule_place").val()
+				},
+				success : function(data){
+					check_rule_result(rule_data_info, rule_data_total);
+				}
+			});
+			
+		}
+		function check_rule_result(rule_data_info, rule_data_total){
+			var data_check_rule_result = [];
+			$.ajax({
+				type : "POST",
+				url : "/ruleresult.do",
+				dataType : "json",
+				success : function(data){
+					for(i = 0; i < data.rows.length; i++){
+					data_check_rule_result[i] = data.rows[i];
+					}
+					update_delete_rule_info(rule_data_info, rule_data_total, data_check_rule_result);
+				}
+			});
+		}
+		function update_delete_rule_info(rule_data_info, rule_data_total, data_check_rule_result){
+			$.ajax({
+				type : "POST",
+				url : "/ruleinfoDelete.do",
+				dataType : "json",
+				data:{
+					rule_mst_id : revise_id,
+				},
+				success : function(data){
+					update_insert_rule_info(rule_data_info, rule_data_total, data_check_rule_result);
+				}
+			});
+			
+		}
+		function update_insert_rule_info(rule_data_info, rule_data_total, data_check_rule_result){
+			var revise_number_id = [];
+			revise_number_id = revise_id.split('e');
+			for(i = 0; i < sensor_device_list.length; i++){
+				if($("#"+sensor_device_list[i].id+"_rule_update").text()!= null && $("#"+sensor_device_list[i].id+"_rule_update").text()!="null" && $("#"+sensor_device_list[i].id+"_rule_update").text() !=""){
+					//delay();
+					var rank = "";
+					var rule_value_update = $("#rule_value_update"+sensor_device_list[i].id+"").val();
+					if($("#rule_value_update"+sensor_device_list[i].id+"").val() == ""){
+						rule_value_update = "0";
+					}
+					var triger_value = "0";
+					if($("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val() == "AND"){
+						rank = "rank000001";
+						$.ajax({
+							type : "POST",
+							url : "/ruleinfoInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : revise_id,
+								rule_detail_id : "detail" + revise_number_id[1],
+								triger_id : "triger" + revise_number_id[1],
+								sensor_device_id : sensor_device_list[i].id,
+								triger_rule : rule_value_update,
+								triger_name :$("#"+sensor_device_list[i].id+"_rule_update").text(),
+								triger_sign : $("#choise_value_update"+sensor_device_list[i].sensor_device_id+"").val(),
+								triger_value : triger_value,
+								triger_operator : $("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val(),
+								triger_rank : rank,
+								url : sensor_device_list[i].url,
+								origin : sensor_device_list[i].origin,
+								function_name : sensor_device_list[i].function_name,
+								device_type : sensor_device_list[i].device_type,
+							},
+							success : function(data){
+							}
+						});
+					}
+					else if($("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val() == "OR"){
+						rank = "rank000002";
+						$.ajax({
+							type : "POST",
+							url : "/ruleinfoInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : revise_id,
+								rule_detail_id : "detail" + revise_number_id[1],
+								triger_id : "triger" + revise_number_id[1],
+								sensor_device_id : sensor_device_list[i].id,
+								triger_rule : rule_value_update,
+								triger_name :$("#"+sensor_device_list[i].id+"_rule_update").text(),
+								triger_sign : $("#choise_value_update"+sensor_device_list[i].sensor_device_id+"").val(),
+								triger_value : triger_value,
+								triger_operator : $("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val(),
+								triger_rank : rank,
+								url : sensor_device_list[i].url,
+								origin : sensor_device_list[i].origin,
+								function_name : sensor_device_list[i].function_name,
+								device_type : sensor_device_list[i].device_type,
+							},
+							success : function(data){
+							}
+						});
+					}
+					else if($("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val() == "" || $("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val() == null || $("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val() == "null"){
+						rank = "rank000003";
+						$.ajax({
+							type : "POST",
+							url : "/ruleinfoInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : revise_id,
+								rule_detail_id : "detail" + revise_number_id[1],
+								triger_id : "triger" + revise_number_id[1],
+								sensor_device_id : sensor_device_list[i].id,
+								triger_rule : rule_value_update,
+								triger_name :$("#"+sensor_device_list[i].id+"_rule_update").text(),
+								triger_sign : $("#choise_value_update"+sensor_device_list[i].sensor_device_id+"").val(),
+								triger_value : triger_value,
+								triger_operator : $("#choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"").val(),
+								triger_rank : rank,
+								url : sensor_device_list[i].url,
+								origin : sensor_device_list[i].origin,
+								function_name : sensor_device_list[i].function_name,
+								device_type : sensor_device_list[i].device_type,
+							},
+							success : function(data){
+							}
+						});
+					}
+					
+					
+					
+				}
+			}
+			update_insert_rule_info_device(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id);
+		}
+		/* delay 함수 */
+		var gap = 1000;
+		function delay(gap){ /* gap = 밀리초 */ 
+			  var then,now; 
+			  then=new Date().getTime(); 
+			  now=then; 
+			  while((now-then)<gap){ 
+			    now=new Date().getTime();  // 현재시간을 읽어 함수를 불러들인 시간과의 차를 이용하여 처리 
+			  } 
+		} 
+
+		function delay_device(gap){ /* gap = 밀리초 */ 
+			  var then,now; 
+			  then=new Date().getTime(); 
+			  now=then; 
+			  while((now-then)<gap){ 
+			    now=new Date().getTime();  // 현재시간을 읽어 함수를 불러들인 시간과의 차를 이용하여 처리 
+			  } 
+		} 
+		function update_insert_rule_info_device(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id){
+			update_rule_result_delete(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id);
+		}
+		function update_rule_result_delete(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id){
+			$.ajax({
+				type : "POST",
+				url : "/ruleresultDelete.do",
+				dataType : "json",
+				data:{
+					rule_mst_id : revise_id,
+				},
+				success : function(data){
+					update_rule_result_insert(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id);
+				}
+			});
+		}
+		function update_rule_result_insert(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id){
+			var chack_sensor_device = "";
+			var triger_on_off_value = [];
+			var triger_on_off = "";
+			for(var ii = 0; ii < sensor_device_list.length; ii++){
+				if(sensor_device_list[ii].sensor_device_id != chack_sensor_device){
+					if($("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text() != "null" && $("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text() != null && $("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text() != ""){
+						var result_value_update = "0";
+						var result_value_update = $("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val();
+						if($("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val() != ""){
+							result_value_update = "0";
+						}
+						
+						if($("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val() != ""){
+							triger_on_off = $("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val();
+							triger_on_off_value = triger_on_off.split('/');
+						}
+						$.ajax({
+							type : "POST",
+							url : "/ruleresultInsert.do",
+							dataType : "json",
+							data:{
+								rule_mst_id : revise_id,
+								rule_detail_id : "detail" + revise_number_id[1],
+								triger_id : "result" + revise_number_id[1],
+								triger_name : $("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text(),
+								triger_on : triger_on_off_value[0],
+								triger_off : triger_on_off_value[1],
+								triger_result : result_value_update
+							},
+							success : function(data){
+							}
+						});
+						chack_sensor_device = sensor_device_list[ii].sensor_device_id;
+					}
+				}
+				
+			}
+			location.reload();
+			
+		}
+		function pagereload() {
+			location.reload();
+		}
+		
+	</script>
+<style type="text/css">
+table{border-collapse:collapse;}
+th, td {padding:0px;}
+	.layer {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer .bg {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5; filter:alpha(opacity=50);}
+	.layer .pop-layer {display:block;}
+
+	.pop-layer {display:none; position: absolute; top: 50%; left: 50%; width: 260px; height:300px;  background-color:#fff; z-index: 10;}	
+	.pop-layer .pop-container {}
+	.pop-layer p.ctxt {color: #666; }
+	.pop-layer .btn-r {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	a.cbtn {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff;}	
+	a.cbtn2 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn:hover {}
+	
+	.layer3 {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer3 .bg3 {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5;  filter:alpha(opacity=50);}
+	.layer3 .pop-layer3 {display:block}
+
+	.pop-layer3 {display:none; position: absolute;  top: 50%; left: 50%; width: 260px; height:220px;  background-color:#fff; z-index: 10;}
+	.pop-layer3 .pop-container3 {}
+	.pop-layer3 p.ctxt3 {color: #666; }
+	.pop-layer3 .btn-r3 {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	
+	a.cbtn3 {display:inline-block; width:34px; height:25px; font-size:10px; color:#fff; }	
+	a.cbtn23 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn3:hover {}
+	
+	.layer4 {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer4 .bg4 {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5;  filter:alpha(opacity=50);}
+	.layer4 .pop-layer4 {display:block}
+
+	.pop-layer4 {display:none; position: absolute;  top: 50%; left: 50%; width: 1100px; height:520px;  background-color:#fff; z-index: 10;}
+	.pop-layer4 .pop-container4 {}
+	.pop-layer4 p.ctxt4 {color: #666; }
+	.pop-layer4 .btn-r4 {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	
+	a.cbtn4 {display:inline-block; width:34px; height:25px; font-size:10px; color:#fff; }	
+	a.cbtn24 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn4:hover {}
+	
+	.layer5 {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer5 .bg5 {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5;  filter:alpha(opacity=50);}
+	.layer5 .pop-layer5 {display:block}
+
+	.pop-layer5 {display:none; position: absolute;  top: 50%; left: 50%; width: 1100px; height:520px;  background-color:#fff; z-index: 10;}
+	.pop-layer5 .pop-container4 {}
+	.pop-layer5 p.ctxt5 {color: #666; }
+	.pop-layer5 .btn-r5 {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	
+	a.cbtn5 {display:inline-block; width:34px; height:25px; font-size:10px; color:#fff; }	
+	a.cbtn25 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn5:hover {}
+	
+	
+.text-placeholder{color:black; text-align: center; font-size:10px;}
+::-webkit-input-placeholder{color:black; text-align: center; font-size:10px;} /* 웹킷 전용 속성 */
+textarea:-moz-placeholder, input:-moz-placeholder{color:black; text-align: center; font-size:10px;}  /* 파이어폭스 전용 속성 */
+body{
+	background-color:#f6f6f6
+}
+table{
+	table-layout:fixed;
+	word-break:break-all;
+}
+#fixedbtn{
+ position: absolute;
+ display : scroll;
+}
+</style>
+<!-- 
+<style type="text/css">
+.examples {	padding-left: 10px;}
+
+.wrp {width: 100%; text-align: center;	margin-top: 15px;}
+
+.frm {text-align: left; width: 1050px; margin: auto;}
+
+.fldLbl { white-space: nowrap;}
+
+.panel-body { text-align: left; margin: auto; font-size: 85%; height: 300px; overflow: auto;}
+</style>
+ -->
+<meta charset="utf-8" />
+<title>Rule_Total</title>
+</head>
+<body>
+	<h4 style="text-align: center;" class ="gheader"> <span style="font-size: medium"></span></h4>
+	<div id="Form1" class="wrap">
+        <div id="wrap" class="frm">
+			<div class="btn-group btn-group-justified" role="group" style="margin-bottom:10px;">
+			
+<button href="#" class="btn-example" onclick="layer_open('layer2');return false;"  style="float:left; display:scroll; position : absolute; margin-left: 530px; width:150px; height:25px; font-size:10px">Sensor/Device 등록</button>
+<div class="layer">
+	<div class="bg"></div>
+	<div id="layer2" class="pop-layer">
+		<div class="pop-container">
+			<div class="pop-conts">
+			<table style="margin-left:10px; width:260px; height:300px">  <!--// 상단 content-->
+			<tr height="10px"></tr>
+			<tr><td style="font-size:15px;">Sensor/Device 등록</td></tr>
+			<tr><td>
+			<table style="margin-left:5px; font-size:10px">
+			<tr>
+			<td>Sensor/Device ID</td>
+			<td><input type="text" placeholder="Sensor/Device ID" name="DeviceId" style="margin-left:11px; width:140px; height:20px; text-align:center;" id ="DeviceId"></td>
+			</tr>
+			<tr>
+			<td>Sensor/Device</td>
+			<td style="height:20px">
+			<!-- <input type="text" placeholder="Sensor/Device" name="SensorDevice" style="margin-left:11px; width:242px; height:40px;" id ="type"> -->
+				<input type="radio" name="catagory" id="sensor" style="margin-left:20px" checked="checked" />
+				<label for="sensor">Sensor</label>
+				<input type="radio" name="catagory" id="device" style="margin-left:20px"/>
+				<label for="device">Device</label>
+			</td>
+			</tr>
+			<tr>
+			<td>Function Name</td>
+			<td><input type="text" placeholder="Function Name" name="function_name" style="margin-left:11px; width:140px; height:20px; text-align:center;" id ="function_name"></td>
+			</tr>
+			<tr>
+			<td>Origin</td>
+			<td><input type="text" placeholder="식별자" name="origin" style="margin-left:11px; width:140px; height:20px; text-align:center;" id ="origin"></td>
+			</tr>
+			<tr>
+			<td>초기 값</td>
+			<td><input type="text" placeholder="Ex) 0 or 1" name="firstvalue" style="margin-left:11px; width:140px; height:20px; text-align:center;" id ="firstvalue"></td>
+			</tr>
+			<tr>
+			<td>비고</td>
+			<td><input type="text" placeholder="etc" name="etc" style="margin-left:11px; width:140px; height:20px; text-align:center;" id ="etc"></td>
+			</tr>
+			<tr>
+			<td>noti nurl</td>
+			<td><input type="text" placeholder="noti" name="noti" style="margin-left:11px; width:140px; height:20px; text-align:center;" id ="noti_url"></td>
+			</tr>
+			
+			</table>
+			
+			</td></tr>
+			<tr><td>
+			<button href="#" onclick="" id ="insertbutton_AE_DB" class="btn-example" style="float:left; margin-left:20px;width:100px; height:25px; font-size:10px">등록</button>
+			<a href="#" class="cbtn"><button href="#" class="cbtn" style="float:left; width:100px; height:25px; font-size:10px">취소</button></a>
+			</td></tr>
+			
+			</table>
+			
+			</div>
+		</div>
+	</div>
+</div>
+<!-- 
+<button href="#" class="btn-example" id ="deletebutton"  style="float:left; width:150px; height:25px; font-size:10px">Sensor/Device 삭제</button>
+ -->
+<button href="#" class="btn-example" onclick="layer_open3('layer23');return false;"  style="float:left; display:scroll; position : absolute; margin-left: 680px; width:100px; height:25px; font-size:10px">설정</button>
+<div class="layer3">
+	<div class="bg3"></div>
+	<div id="layer23" class="pop-layer3">
+		<div class="pop-container3">
+			<div class="pop-conts3">
+			<table style="margin-left:10px; width:260px; height:220px">  <!--// 상단 content-->
+			<tr height="5px"></tr>
+			<tr><td style="font-size:15px;">설정</td></tr>
+			<tr><td>
+			<table style="margin-left:5px; font-size:10px" id = serverlist>
+			<tr>
+			<td>SI IP</td>
+			<td><input type="text" placeholder="Ex) 000.000.000.000" name="SiIp" style="margin-left:11px; width:140px; height:20px;" id ="SiIp"></td>
+			</tr>
+			<tr>
+			<td>Port</td>
+			<td><input type="text" placeholder="Ex) 8080" name="Port" style="margin-left:11px; width:140px; height:20px;" id ="Port"></td>
+			</tr>
+			<tr>
+			<td>Server Name</td>
+			<td><input type="text" placeholder="Server Name" name="Sname" style="margin-left:11px; width:140px; height:20px;" id ="Sname"></td>
+			</tr>
+			<tr>
+			<td>IN/CSE</td>
+			<td><input type="text" placeholder="Ex) herit-in/herit-cse" name="IC" style="margin-left:11px; width:140px; height:20px;" id ="IC"></td>
+			</tr>
+			<tr>
+			<td>Rule Name</td>
+			<td><input type="text" placeholder="Rule_name" name="RName" style="margin-left:11px; width:140px; height:20px;" id ="RName"></td>
+			</tr>
+			
+			</table>
+			
+			</td></tr>
+			<tr><td>
+			<button href="#" onclick="" id ="update_setting" class="btn-example" style="float:left; margin-left:20px;width:100px; height:25px; font-size:10px">등록</button>
+			<a href="#" class="cbtn23"><button href="#" onclick="" class="btn-example" style="float:left; width:100px; height:25px; font-size:10px">취소</button></a>
+			</td></tr>
+			
+			</table>
+			
+			</div>
+		</div>
+	</div>
+</div>
+<!-- 상황등록 버튼 시작  -->
+<button href="#" class="btn-example" onclick="layer_open4('layer24');return false;" style="float:left; display:scroll; position : absolute; margin-left: 780px; width:100px; height:25px; font-size:10px">상황 등록</button>
+<div class="layer4">
+	<div class="bg4"></div>
+	<div id="layer24" class="pop-layer4">
+		<div class="pop-container4">
+			<div class="pop-conts4">
+			<table style="margin-left:10px; width:430px; height:300px">  <!--// 상단 content-->
+			<tr height="10px"></tr>
+			<tr>
+				<td style="font-size:15px; width:50px; text-align:center;">상황 제목</td>
+				<td><input type="text" placeholder="제목을 입력해 주세요" id = "rule_title" style="margin-left:11px; width:140px; height:20px; text-align:center;"></td>
+				<td width ="50px"></td>
+				<td style="font-size:15px; width:50px; text-align:center">위치</td>
+				<td><input type="text" placeholder="위치를 입력해 주세요" id = "rule_place" style=" width:140px; height:20px; text-align:center;"></td>
+			</tr>
+			<tr height="20px"></tr>
+			<tr><td colspan = "5">
+			
+			<table style="margin-left:5px; font-size:10px" id = rule_list_check>
+			<tr>
+				<!-- 기간 table 예시 다른 곳 사용시 조금씩 수정 -->
+				<!-- 수정 완료후 border를 삭제 -->
+				<td style="vertical-align: top;">
+				<div style="width:320px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "20%">Check</th>
+						<th width = "50%">Function</th>
+						<th width = "30%">Type</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "sensor_device">
+					</tbody>
+					</table>
+				</div>
+				</td>
+				
+				<td style="vertical-align: top; width : 150px;">
+					<table>
+					<tr height = "100px"></tr>
+						<tr>
+							<td>
+							<button onclick = "condition();" style="float:left; margin-left: 15px; margin-right : 15px; width:100px; height:25px; font-size:10px">조건</button>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "result();"  style="float:left; margin-left: 15px; margin-right : 15px; width:100px; height:25px; font-size:10px">결과</button>
+							</td>
+						</tr>
+					<tr height = "100px"></tr>
+					</table>
+				</td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:320px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "120px">Function</th>
+						<th>등호</th>
+						<th>Value</th>
+						<th>연산자</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "condition_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+				
+				<td width ="10px"></td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:320px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th>Function</th>
+						<th>On/Off</th>						
+					</tr>
+					</thead>
+					
+					<tbody id = "result_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+			</tr>
+			
+			<tr>
+				<td colspan = "5">
+					<table>
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "" id = "insertbutton_rule" style="float:left; margin-left: 850px; width:100px; height:25px; font-size:10px">등록</button>
+							<a href="#" class="cbtn24"><button onclick = ""  style="float:left; margin-left: 20px; width:100px; height:25px; font-size:10px">취소</button></a>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+					</table>
+				
+				</td>
+			</tr>
+			
+			<tr>
+				<td style="vertical-align: top;">
+			<!-- 	<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th colspan = "2">결과</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "">
+					</tbody>
+					</table>
+					 -->
+				</td>
+				
+			</tr>
+			
+			</table>
+			
+			</td></tr>
+			<tr><td>
+			<!--
+			<button href="#" onclick="" id ="update_setting" class="btn-example" style="float:left; margin-left:20px;width:100px; height:25px; font-size:10px">등록</button>
+			<a href="#" class="cbtn24"><button href="#" onclick="" class="btn-example" style="float:left; width:100px; height:25px; font-size:10px">취소</button></a>
+			 -->
+			
+			</td></tr>
+			
+			</table>
+			
+			</div>
+		</div>
+	</div>
+</div>
+<!-- 상황등록 버튼 끝  -->
+<!-- 상황수정 버튼  -->
+<button href="#" id = "revice_title" class="btn-example" onclick="layer_open5('layer25');return false;" style="float:left; display:scroll; position : absolute; margin-left: 880px; width:100px; height:25px; font-size:10px">상황 수정</button>
+<div class="layer5">
+	<div class="bg5"></div>
+	<div id="layer25" class="pop-layer5">
+		<div class="pop-container5">
+			<div class="pop-conts5">
+			<table style="margin-left:10px; width:430px; height:300px">  <!--// 상단 content-->
+			<tr height="10px"></tr>
+			<tr>
+				<td style="font-size:15px; width:50px; text-align:center;">상황 제목</td>
+				<td><input type="text" placeholder="제목을 입력해 주세요" id = "revice_rule_title" style="margin-left:11px; width:140px; height:20px; text-align:center;"></td>
+				<td width ="50px"></td>
+				<td style="font-size:15px; width:50px; text-align:center">위치</td>
+				<td><input type="text" placeholder="위치를 입력해 주세요" id = "revice_rule_place" style=" width:140px; height:20px; text-align:center;"></td>
+			</tr>
+			<tr height="20px"></tr>
+			<tr><td colspan = "5">
+			
+			<table style="margin-left:5px; font-size:10px" id = rule_list_check>
+			<tr>
+				<!-- 기간 table 예시 다른 곳 사용시 조금씩 수정 -->
+				<!-- 수정 완료후 border를 삭제 -->
+				<td style="vertical-align: top;">
+				<div style="width:320px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "20%">Check</th>
+						<th width = "50%">Function</th>
+						<th width = "30%">Type</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "revise_sensor_device">
+					</tbody>
+					</table>
+				</div>
+				</td>
+				
+				<td style="vertical-align: top; width : 150px;">
+					<table>
+					<tr height = "100px"></tr>
+						<tr>
+							<td>
+							<button onclick = "revise_condition();" style="float:left; margin-left: 15px; margin-right : 15px; width:100px; height:25px; font-size:10px">조건</button>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "revise_result2();"  style="float:left; margin-left: 15px; margin-right : 15px; width:100px; height:25px; font-size:10px">결과</button>
+							</td>
+						</tr>
+					<tr height = "100px"></tr>
+					</table>
+				</td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:320px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "120px">Function</th>
+						<th>등호</th>
+						<th>Value</th>
+						<th>연산자</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "revise_condition_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+				
+				<td width ="10px"></td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:320px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:300px; background-color:#fff">
+					<thead>
+					<tr>
+						<th>Function</th>
+						<th>On/Off</th>						
+					</tr>
+					</thead>
+					
+					<tbody id = "revise_result_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+			</tr>
+			
+			<tr>
+				<td colspan = "5">
+					<table>
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "update_info_rule_mst();" id = "update_button_rule_mst" style="float:left; margin-left : 850px; width:100px; height:25px; font-size:10px">등록</button>
+							<a href="#" class="cbtn25"><button onclick = ""  style="float:left; margin-left: 20px; width:100px; height:25px; font-size:10px">취소</button></a>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+					</table>
+				
+				</td>
+			</tr>
+			
+			<tr>
+				<td style="vertical-align: top;">
+				</td>
+				
+			</tr>
+			
+			</table>
+			
+			</td></tr>
+			<tr><td>
+			
+			</td></tr>
+			
+			</table>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+<button href="#" onclick="delete_info();" class="btn-example" id ="stopWorker" style="float:left; display:scroll; position : absolute; margin-left: 980px; width:100px; height:25px; font-size:10px">상황 삭제</button>		
+<a href="#" onclick="" class="btn-example" id ="" style="float:left; height:25px; margin-left : 10px; font-size:10px"><img src="../../../image/home_refresh_n.png" style= "width:25px; margin-left:1080px; height:25px;" alt="새로고침" onclick="pagereload()"></a>
+			</div>
+			</div></div>
+			<p>
+			
+	<h4 style="text-align: center;" class="gheader">
+		<br>
+		<span style="font-size: medium"></span>
+	</h4>
+	<div style="margin-left: 20px">
+		<div id="Form1" class="wrap">
+
+		<!-- Content -->
+		<table cellspacing= "0" cellpadding= "0" style="border-collapse:collapse">
+			<tr>
+				<!-- 기간 table 예시 다른 곳 사용시 조금씩 수정 -->
+				<!-- 수정 완료후 border를 삭제 -->
+				<td style="vertical-align: top;">
+					<div style="width:1120px; height:533px; overflow:auto"> <!-- 코딩 완료후 FHD 사이즈로 변경할것 1920x1080 =>  약 weight = "1700" height = "1000px" -->
+					<table border ="1" style="font-size:10px; text-align:center; width:1100px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "3%" nowrap>구분</th>
+						<th width = "3%" nowrap>No.</th>
+						<th width = "10%" nowrap>Title</th>
+						<th width = "10%" nowrap>상황 상태</th>
+						<th width = "30%" nowrap>조건</th>
+						<th width = "5%" nowrap>Se_Value</th>
+						<th width = "15%" nowrap>Device Name</th>
+						<th width = "5%" nowrap>De_Value</th>
+						<th width = "10%" nowrap>결과(True/False)</th>
+						<th width = "9%" nowrap>Device 위치</th>
+					</tr>
+					</thead>
+						<tbody id = "rule_engine_list">
+						<tr>
+							<td rowspan = "3" nowrap><input type="checkbox" name="catagory" id="catagory0"/></td>
+							<td rowspan = "3">No</td>
+							<td rowspan = "3"> 상황제목 </td>
+							<td>Sensor ID</td>
+							<td>url</td>
+							<td>현재 Value</td>
+							<td>변경 Value</td>
+							<td>Device ID</td>
+							<td>Device 상태</td>
+						</tr>
+						<tr>
+							<td>Sensor ID2</td>
+							<td>url</td>
+							<td>현재 Value</td>
+							<td>변경 Value</td>
+							<td>Device ID</td>
+							<td>Device 상태</td>
+						</tr>
+						<tr>
+							<td>Sensor ID3</td>
+							<td>url</td>
+							<td>현재 Value</td>
+							<td>변경 Value</td>
+							<td>Device ID</td>
+							<td>Device 상태</td>
+						</tr>
+						</tbody>
+					</table>
+					</div>
+				</td>
+				<td width="100px"></td>
+				<td width="300">
+
+				</td>
+
+				<!-- table end -->
+				
+				
+			</tr>
+
+		</table>
+
+				</div>
+<br>
+
+
+</div>
+
+</body>
+</html>

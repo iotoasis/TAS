@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<link rel="stylesheet" href="./css/rulecss.css">
+<title>DB 등록</title>
+<script type="text/javascript" src="../js/jquery-3.1.1.min.js"></script>
+
+<script type="text/javascript">
+var ip = location.hostname + ":7001";
+
+$(document).ready(function() {
+	
+	serverInfo();
+	
+});
+
+
+function serverInfo(){
+
+	$.ajax({
+		type : "POST",
+		url : "/ruleserver.do",
+		dataType : "json",
+		success : function(data){
+			if (data != null && data != "null") {
+				$("#si_ip").val(data.rows[0].ip);
+				$("#si_port").val(data.rows[0].port);
+				$("#in_cse").val(data.rows[0].in_cse);
+				
+			}
+		}
+	});
+
+}
+
+function detatil_button_Click(){
+
+	if ($("#detail_table").css("display") == "block") {
+		$("#detail_table").css(
+				{
+					"display" : "none"
+				});
+	} else {
+		$("#detail_table").css(
+				{
+					"display" : "block"
+				});
+	}
+}
+
+function okButton_Click(){
+	var tbody = document.getElementById("container_table").getElementsByTagName("TBODY")[0];
+	var tbodyId = (tbody.rows.length - 1) ;
+
+	for(i = 0; i < tbodyId; i++){
+
+		$("#table_" + i).css(
+				{
+					"background-color" : "yellow"
+				});
+		
+		var urlVal = $("#ae").val() + "/" + $("#container_" + i).val();
+		
+		var pollingVal ="";
+
+
+		if($("#noit_" + i).val().trim() != ""){
+			pollingVal = "http://" + $("#si_ip").val().trim() + ":" + $("#si_port").val().trim() + "/~/" +  $("#in_cse").val().trim() + "/" + $("#ae").val().trim() + "/pollingchannel/pcu," +$("#noit_" + i).val().trim();
+
+		}else if($("#noit_" + i).val().trim() == "n" || $("#noit_" + i).val().trim() == "N"  ){
+			pollingVal = "";
+		}else{
+			pollingVal = "http://" + $("#si_ip").val().trim() + ":" + $("#si_port").val().trim() + "/~/" +  $("#in_cse").val().trim() + "/" + $("#ae").val().trim() + "/pollingchannel/pcu";
+			}
+
+		
+		$.ajax({
+			type : "POST",
+			url : "/rulesensordeviceInsert.do",
+			dataType : "json",
+			data : {
+				sensor_device_id : $("#ae").val(),
+				origin : $("#orign").val(),
+				url : urlVal,
+				noti_url : pollingVal
+			},
+			success : function(data) {
+					$("#table_" + data.id).css(
+							{
+								"background-color" : "#03A9F4"
+							});
+					postsm();
+					$("#table_" + data.id).css(
+							{
+								"background-color" : "#FF5A5A"
+							});
+					}
+		});
+	}
+}
+function postsm(){
+
+	var tbody = document.getElementById("container_table").getElementsByTagName("TBODY")[0];
+	var tbodyId = (tbody.rows.length - 1) ;
+
+	for(i = 0; i < tbodyId; i++){
+
+		$("#table_" + i).css(
+				{
+					"background-color" : "yellow"
+				});
+		
+		var urlVal = "http://" + $("#si_ip").val().trim() + ":" + $("#si_port").val().trim() + "/~/" +  $("#in_cse").val().trim() + "/" + $("#ae").val().trim() + "/" +$("#container_" + i).val().trim();
+		
+		var statusVal = "0";
+		
+		var pollingVal = "http://" + $("#si_ip").val().trim() + ":" + $("#si_port").val().trim() + "/~/" +  $("#in_cse").val().trim() + "/" + $("#ae").val().trim() + "/pollingchannel/pcu," + $("#noit_" + i).val().trim();
+		
+		$.ajax({
+			url : "http://" + ip + "/check",
+			type : "POST",
+			dataType : "json",
+			headers : {
+				'ae' : $("#ae").val().trim(),
+				'status' : statusVal,
+				'url' : urlVal,
+				'X-M2M-Origin' : $("#orign").val().trim(),
+				'X-M2M-RI' : $("#ri").val().trim(),
+				'content_type' : "application/vnd.onem2m-res+json",
+				'polling' : pollingVal,
+				'smd' : $("#smd").val().trim(),
+				'id' : i
+			},
+			success : function(data) {
+				if (data.result == "Success"){
+					$("#table_" + data.id).css(
+							{
+								"background-color" : "#03A9F4"
+							});
+					}
+			}
+		});
+	}
+}
+
+function initButton_Click(){
+	location.reload();
+}
+/*
+<tr id="tr0">
+<td colspan="4">
+	<table id="table_0" style="width: 980px; border: 0.2em solid #cccccc; #ffffff;" align="center" >
+		<tr id="tr0_1">
+			<td style="width: 150px;">Container(URL)</td>
+			<td style="width: 770px;"><input id="container_0" type="text" style="width: 98%;" /></td>
+			<td style="width: 50px;" rowspan="3"><input id="minusButton" type="button" style="width: 100%; height: 90px;" value="-" onclick="javascript:minusButton_Click('0');" /></td>
+		</tr>
+		<tr id="tr0_2">
+			<td style="width: 150px;">noti(subscription_url)</td>
+			<td style="width: 770px;"><input id="noit_0" type="text" style="width: 98%;" /></td>
+		</tr>
+	</table>
+</td>
+</tr>
+*/
+function plusButton_Click(){
+
+	var tbody = document.getElementById("container_table").getElementsByTagName("TBODY")[0];
+	var tbodyId = (tbody.rows.length - 1) ;
+
+	var tr = document.createElement("TR");
+	tr.id = "tr" + tbodyId;
+	var td = document.createElement("TD");
+	td.colSpan = "4";
+
+	var table = document.createElement("TABLE");
+	table.id = "table_" + tbodyId;
+	table.style = "width: 980px; border: 0.2em solid #cccccc;";
+	table.align = "center";
+	
+	var row1 = document.createElement("TR");
+	row1.id = "tr" + tbodyId + "_1";
+
+	var row1td1 = document.createElement("TD");
+	var row1td2 = document.createElement("TD");
+	var row1td3 = document.createElement("TD");
+
+	row1td1.style = "width: 150px;";
+	row1td2.style = "width: 770px;";
+	row1td3.style = "width: 50px;";
+	row1td3.rowSpan = "3";
+
+
+	var row1td2Element = document.createElement("INPUT");
+	
+	row1td2Element.id = "container_" + tbodyId;
+	row1td2Element.type = "text";
+	row1td2Element.style = "width:98%;";
+
+
+	
+	var row1td3Element = document.createElement("INPUT");
+	var row1td3ElementId = document.createAttribute("id");
+	var row1td3ElementType = document.createAttribute("type");
+	var row1td3ElementStyle = document.createAttribute("style");
+	var row1td3ElementValue = document.createAttribute("value");
+	var row1td3ElementOnclick = document.createAttribute("onclick");
+
+	row1td3Element.id = "minusButton";
+	row1td3Element.type = "button";
+	row1td3Element.style = "width:100%; height: 90px;";
+	row1td3Element.value = "-";
+	
+	var row1td3ElementOnclick = document.createAttribute("onclick");
+	row1td3ElementOnclick.nodeValue = "javascript:minusButton_Click("+ tbodyId +");";
+	row1td3Element.setAttributeNode(row1td3ElementOnclick);
+
+	
+	var row2 = document.createElement("TR");
+	row2.id = "tr" + tbodyId + "_2";
+	var row2td1 = document.createElement("TD");
+	var row2td2 = document.createElement("TD");
+
+	row2td1.style = "width: 150px;";
+	row2td2.style = "width: 770px;";
+
+	
+	var row2td2Element = document.createElement("INPUT");
+	row2td2Element.id = "noit_" + tbodyId;
+	row2td2Element.type = "text";
+	row2td2Element.style = "width:98%;";
+	
+	row1td1.appendChild(document.createTextNode("Container(URL)"));
+	row1td2.appendChild(row1td2Element);
+	row1td3.appendChild(row1td3Element);
+	row1.appendChild(row1td1);
+	row1.appendChild(row1td2);
+	row1.appendChild(row1td3);
+
+
+	row2td1.appendChild(document.createTextNode("noti(subscription_url)"));
+	row2td2.appendChild(row2td2Element);
+	row2.appendChild(row2td1);
+	row2.appendChild(row2td2);
+
+
+	table.appendChild(row1);
+	table.appendChild(row2);
+
+	td.appendChild(table);
+	tr.appendChild(td);
+
+	tbody.appendChild(tr);
+}
+
+
+function minusButton_Click(obj){
+	  $("#" + "tr" + obj).remove();
+} 
+
+</script>
+</head>
+
+<body>
+	<table width="1050" style="border: 0.1em solid #cccccc; background-color: #ffffff;" align="center">
+		<!-- 메뉴 -->
+		<tr>
+			<td>
+				<table width="1000" height="50" align="center">
+					<tr>
+						<td>룰 트리거 DB 등록</td>
+						<td></td>
+						<td style="width: 200px;"><input id="okButton" type="button" style="width: 100%; height: 100%;" value="등록" onclick="javascript:okButton_Click();"/></td>
+						<td style="width: 200px;"><input id="initButton" type="button" style="width: 100%; height: 100%;" value="초기화" onclick="javascript:initButton_Click();"/></td>
+					</tr>
+				</table>
+			</td>
+			
+		</tr>
+		<!-- 등록 리스트 -->
+		<tr>
+			<td>
+				<table width="1000" style="border: 0.2em solid #cccccc; background-color: #ffffff;" align="center" cellpadding="5" >
+					<tr height="30">
+						<td style="width: 100px;">Device ID(AE)</td>
+						<td style="width: 200px;"><input id="ae" type="text" style="width: 100%"/></td>
+						<td style="width: 50px;"></td>
+						<td style="width: 50px;">Orign</td>
+						<td style="width: 200px;"><input id="orign" type="text" style="width: 100%"/></td>
+						<td style="width: 50px;"></td>
+						<td style="width: 50px;">Ri</td>
+						<td style="width: 200px;"><input id="ri" type="text" style="width: 100%"/></td>
+						<td></td>						
+					</tr>
+					<tr>
+						<td colspan="13">
+							<table id="container_table" style="width: 990px; align="center"  cellpadding="5" >
+								<tr>
+									<th style="width: 150px;">항목</th>
+									<th style="width: 790px;">입력</th>
+									<th style="width: 50px;"><input id="plusButton" type="button" style="width: 100%" value="+" onclick="javascript:plusButton_Click();"/></th>
+								</tr>
+								<tr id="tr0">
+									<td colspan="4">
+										<table id="table_0" style="width: 980px; border: 0.2em solid #cccccc;" align="center" >
+											<tr id="tr0_1">
+												<td style="width: 150px;">Container(URL)</td>
+												<td style="width: 770px;"><input id="container_0" type="text" style="width: 98%;" /></td>
+												<td style="width: 50px;" rowspan="3"><input id="minusButton" type="button" style="width: 100%; height: 90px;" value="-" onclick="javascript:minusButton_Click('0');" /></td>
+											</tr>
+											<tr id="tr0_2">
+												<td style="width: 150px;">noti(subscription_url)</td>
+												<td style="width: 770px;"><input id="noit_0" type="text" style="width: 98%;" /></td>
+											</tr>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<!-- 
+		<tr>
+			<td align="center">
+				<input id="in_out" type="button" style="width: 80%" value="세부사항" onclick="javascript:detatil_button_Click();"/>
+			</td>
+		</tr>
+		 -->
+		<tr>
+			<td>
+				<table id="detail_table" width="1000" height="590" style="border: 0.2em solid #cccccc; background-color: #ffffff; display: none;" align="center" cellpadding="5" >
+					<tr>
+						<td style="width: 50px;">SI IP</td>
+						<td style="width: 150px;"><input id="si_ip" type="text" style="width: 100%"/></td>
+						<td style="width: 50px;">SI PORT</td>
+						<td style="width: 150px;"><input id="si_port" type="text" style="width: 100%"/></td>
+						<td style="width: 50px;">IN/CSE</td>
+						<td style="width: 150px;"><input id="in_cse" type="text" style="width: 100%"/></td>
+					</tr>
+					<tr>
+						<td style="width: 50px;">SMD</td>
+						<td colspan="5"><textarea id="smd" style="height: 500px; width: 900px;"></textarea></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</table>
+</body>
+</html>

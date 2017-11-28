@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    <sqlMap namespace="extas-sql">
+        
+    <select id="getSiHostUrlDevice" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		select * from tb_extas_device_mst where onem2mpath = #onem2mpath#
+	</select>
+	
+	<select id="getSiHostUrlInfo" parameterClass="java.util.HashMap" resultClass="java.util.HashMap">
+		select * from tb_extas_service_info where service_id = #service_id#
+	</select>
+   
+   
+   <update id="deviceUpdate" parameterClass="java.util.HashMap">
+		update
+		tb_extas_device_mst set
+		update_date = now()
+		<isNotEmpty prepend="," property="device_name">
+			device_name = #device_name#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="service_id">
+			service_id = #service_id#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="device_status">
+			device_status = #device_status#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="device_execute_flag">
+			device_execute_flag = #device_execute_flag#
+		</isNotEmpty>
+		where
+		onem2mpath= #onem2mpath#
+	</update>
+</sqlMap>

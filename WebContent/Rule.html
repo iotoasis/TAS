@@ -1,0 +1,1646 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<link rel="stylesheet" href="./css/rulecss.css">
+<title>룰트리거 UI</title>
+<script type="text/javascript" src="../js/jquery-3.1.1.min.js"></script>
+<style type="text/css">
+
+	.layer {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer .bg {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5; filter:alpha(opacity=50);}
+	.layer .pop-layer {display:block;}
+
+	.pop-layer {display:none; position: absolute; top: 50%; left: 50%; width: 260px; height:300px;  background-color:#fff; z-index: 10;}	
+	.pop-layer .pop-container {}
+	.pop-layer p.ctxt {color: #666; }
+	.pop-layer .btn-r {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	a.cbtn {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff;}	
+	a.cbtn2 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn:hover {}
+	
+	.layer3 {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer3 .bg3 {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5;  filter:alpha(opacity=50);}
+	.layer3 .pop-layer3 {display:block}
+
+	.pop-layer3 {display:none; position: absolute;  top: 50%; left: 50%; width: 260px; height:220px;  background-color:#fff; z-index: 10;}
+	.pop-layer3 .pop-container3 {}
+	.pop-layer3 p.ctxt3 {color: #666; }
+	.pop-layer3 .btn-r3 {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	
+	a.cbtn3 {display:inline-block; width:34px; height:25px; font-size:10px; color:#fff; }	
+	a.cbtn23 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn3:hover {}
+	
+	.layer4 {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer4 .bg4 {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5;  filter:alpha(opacity=50);}
+	.layer4 .pop-layer4 {display:block}
+
+	.pop-layer4 {display:none; position: absolute;  top: 50%; left: 50%; width: 1550px; height:620px;  background-color:#fff; z-index: 10;}
+	.pop-layer4 .pop-container4 {}
+	.pop-layer4 p.ctxt4 {color: #666; }
+	.pop-layer4 .btn-r4 {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	
+	a.cbtn4 {display:inline-block; width:34px; height:25px; font-size:10px; color:#fff; }	
+	a.cbtn24 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn4:hover {}
+	
+	.layer5 {display:none; position:fixed; _position:absolute; top:0; left:0; width:100%; height:100%; z-index:100;}
+	.layer5 .bg5 {position:absolute; top:0; left:0; width:100%; height:100%; background:#000; opacity:.5;  filter:alpha(opacity=50);}
+	.layer5 .pop-layer5 {display:block}
+
+	.pop-layer5 {display:none; position: absolute;  top: 50%; left: 50%; width: 1550px; height:620px;  background-color:#fff; z-index: 10;}
+	.pop-layer5 .pop-container4 {}
+	.pop-layer5 p.ctxt5 {color: #666; }
+	.pop-layer5 .btn-r5 {width: 100%; border-top: 1px solid #DDD; text-align:right;}
+
+	
+	a.cbtn5 {display:inline-block; width:34px; height:25px; font-size:10px; color:#fff; }	
+	a.cbtn25 {display:inline-block; width:102px; height:25px; font-size:10px; color:#fff; }
+	a.cbtn5:hover {}
+	
+	
+.text-placeholder{color:black; text-align: center; font-size:10px;}
+::-webkit-input-placeholder{color:black; text-align: center; font-size:10px;} /* 웹킷 전용 속성 */
+textarea:-moz-placeholder, input:-moz-placeholder{color:black; text-align: center; font-size:10px;}  /* 파이어폭스 전용 속성 */
+</style>
+<script type="text/javascript">
+
+var ip = location.hostname + ":7001'";
+
+var ruleList = "";
+var ruleMstList = "";
+var sensor_device_list = [];
+var revise_id = "";
+
+$(document).ready(function() {
+
+	getRuleList();
+	serverInfo();
+	var auto_refresh = setInterval(
+			function rightAE(){
+				$.ajax({
+					type : "POST",
+					url : "/ruleSelect.do",
+					dataType : "json",
+					success : function(data) {
+						if (data != null && data != "null") {
+							if(ruleMstList != ""){
+								
+								if(data.rows.length != ruleMstList.rows.length){
+									getRuleList();
+								}else{
+										
+									for(i = 0; i < data.rows.length; i++){
+	
+										if(data.rows[i].rule_value == "on"){
+	
+											refreshRuleList(data.rows[i]);
+										
+										}
+									}
+	
+									ruleMstList = data;
+								}
+							}else{
+
+								ruleMstList = data;
+
+								}
+						}
+					}
+				});
+				
+			}, 3000);
+});
+
+function serverInfo(){
+
+	$.ajax({
+		type : "POST",
+		url : "/ruleserver.do",
+		dataType : "json",
+		success : function(data){
+			if (data != null && data != "null") {
+				$("#si_ip").val(data.rows[0].ip);
+				$("#si_port").val(data.rows[0].port);
+				$("#in_cse").val(data.rows[0].in_cse);
+				$("#si_name").val(data.rows[0].server_name);
+				
+			}
+		}
+	});
+
+}
+function list_sensor_device(){
+	var list_sensor_device_id = "";
+	$("#sensor_device").html("");
+	$("#revise_sensor_device").html("");
+	$.ajax({
+		type : "POST",
+		url : "/rulesensordevice.do",
+		dataType : "json",
+		success : function(data) {
+			if (data != null && data != "null") {
+				for(i = 0, j = 0, k = 0; i < data.rows.length; i++){
+						list_sensor_device_id = list_sensor_device_id +"<tr>"
+						+"<td nowrap><input type=\"checkbox\" name=\"catagory\" id=\"catagory_list"+i+"\"/></td>"
+						+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\"deid"+i+"\" nowrap >"+data.rows[i].url +"</td>"
+						+"</tr>"
+				
+						
+					sensor_device_list[i] = data.rows[i]
+				}
+				$(list_sensor_device_id).appendTo("#sensor_device");
+				$(list_sensor_device_id).appendTo("#revise_sensor_device");
+			}
+			
+		}
+	});
+	
+}
+function refreshRuleList(ruleMstObject){
+	$.ajax({
+		type : "POST",
+		url : "/ruleTotalSelect.do",
+		dataType : "json",
+		data:{
+			rule_mst_id : ruleMstObject.rule_mst_id
+		},
+		success : function(data){
+			if (data != null && data != "null") {
+
+				for(i = 0; i < data.rows.length; i ++ ){
+
+					$("#rule_mst_name_" + data.rows.rule_mst_id + "_" + i).text(data.rows[0].rule_mst_name);
+					if(data.rows[0].rule_status == "True"){
+						$("#rule_status_" + data.rows[0].rule_mst_id + "_" + i).text("발생");
+						$("#rule_table_" + data.rows[0].rule_mst_id).css(
+								{
+									"background-color" : "yellow"
+								});
+						
+					}else{
+						$("#rule_status_" + data.rows[0].rule_mst_id + "_" + i).text("미발생");
+						$("#rule_table_" + data.rows[0].rule_mst_id).css(
+								{
+									"background-color" : "white"
+								});
+					}
+					
+					$("#url_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].url);
+					$("#triger_value_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].triger_value);
+					$("#rule_sign_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].triger_sign);
+					$("#triger_rule_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].triger_rule);
+					$("#triger_operator_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].triger_operator);
+					$("#result_triger_name_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].result_triger_name);
+					$("#triger_result_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].triger_result);
+					$("#triger_result_status_" + data.rows[i].rule_mst_id + "_" + i).text(data.rows[i].triger_result_status);
+
+					}
+				
+				updateRuleMst(ruleMstObject, "off");
+				
+			}
+			
+		}
+
+	});
+}
+
+function updateRuleMst(ruleMstObject, ruleValueObject){
+
+	$.ajax({
+		type : "POST",
+		url : "/Updaterulemst.do",
+		dataType : "json",
+		data:{
+			rule_mst_id : ruleMstObject.rule_mst_id,
+			rule_mst_name : ruleMstObject.rule_mst_name,
+			rule_mst_place : ruleMstObject.rule_mst_place,
+			rule_status : ruleMstObject.rule_status,
+			rule_value : ruleValueObject
+		},
+		success : function(data){
+			
+		}
+	});
+	
+	
+}
+
+function getRuleList(){
+
+	$.ajax({
+		type : "POST",
+		url : "/ruleTotalSelect.do",
+		dataType : "json",
+		success : function(data){
+				createList(data);
+				
+		}
+	}); 
+}
+/*
+<tr>
+			<td>
+				<table id="rule_table_0" style="width: 1350px; border: 0.2em solid #cccccc;" align="center">
+				<tr>
+						<td rowspan="2" style="width: 60px;"><input id="checkBox_0" type="checkbox" style="width: 100%; height: 20px;" /></td>
+						<td id="rule_mst_name_0" rowspan="2" style="width: 120px; height: 20px;">상황명</td>
+						<td id="rule_status_0" rowspan="2" style="width: 80px; height: 20px;">발생</td>
+						<td id="url_0" style="width: 350px; height: 20px;">ONSB_TEMP01_001/Power/status</td>
+						<td id="triger_value_0" style="width: 50px; height: 20px;">10</td>
+						<td id="rule_sign_0" style="width: 50px; height: 20px;"><</td>
+						<td id="triger_rule_0" style="width: 50px; height: 20px;">40</td>
+						<td id="triger_operator_0" style="width: 50px; height: 20px;">AND</td>
+						<td id="result_triger_name_0" style="width: 350px; height: 20px;">ONSB_Aircon01_001/Power/status</td>
+						<td id="triger_result_0" style="width: 50px; height: 20px;">1</td>
+						<td id="triger_result_status_0" style="width: 80px; height: 20px;">성공</td>
+					</tr>
+					<tr>
+						<td id="url_0" style="width: 350px; height: 20px;">ONSB_TEMP01_001/Power/status</td>
+						<td id="triger_value_0" style="width: 50px; height: 20px;">10</td>
+						<td id="rule_sign_0" style="width: 50px; height: 20px;"><</td>
+						<td id="triger_rule_0" style="width: 50px; height: 20px;">40</td>
+						<td id="triger_operator_0" style="width: 50px; height: 20px;">AND</td>
+						<td id="result_triger_name_0" style="width: 350px; height: 20px;">ONSB_Aircon01_001/Power/status</td>
+						<td id="triger_result_0" style="width: 50px; height: 20px;">1</td>
+						<td id="triger_result_status_0" style="width: 80px; height: 20px;">성공</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+*/
+function createList(data){
+	
+	var tableList = [];
+	var tableListInt = 0;
+	
+	for(i = 0; i < data.rows.length; i++){
+
+		if(i != data.rows.length -1 ){
+			
+			if(data.rows[i].rule_mst_id != data.rows[i+1].rule_mst_id){
+				tableList[tableListInt] = data.rows[i];
+				createTable(tableList, i);
+				tableListInt = 0;
+				tableList = [];
+			}else{
+				tableList[tableListInt] = data.rows[i];
+				tableListInt ++;
+				}
+			
+		}else{
+			tableList[tableListInt] = data.rows[i];
+			createTable(tableList, i);
+			tableListInt = 0;
+			tableList = [];
+			}
+		
+
+
+	}
+	ruleList = data;
+}
+
+function createTable(tableList, i){
+	var tbody = document.getElementById("rule_table").getElementsByTagName("TBODY")[0];
+	var tr = document.createElement("TR");
+	var td = document.createElement("TD");
+
+	var table = document.createElement("TABLE");
+	table.id = "rule_table_" + tableList[0].rule_mst_id;
+	table.style = "width: 1350px; border: 0.2em solid #cccccc;";
+	table.align = "center";
+
+	for(ii = 0; ii < tableList.length; ii++){
+		
+		var tr1 = document.createElement("TR");
+		var td1 = document.createElement("TD");
+		var td2 = document.createElement("TD");
+		var td3 = document.createElement("TD");
+		var td4 = document.createElement("TD");
+		var td5 = document.createElement("TD");
+		var td6 = document.createElement("TD");
+		var td7 = document.createElement("TD");
+		var td8 = document.createElement("TD");
+		var td9 = document.createElement("TD");
+		var td10 = document.createElement("TD");
+		var td11 = document.createElement("TD");
+		
+		
+		if(ii == 0){
+			var id =  tableList[ii].rule_mst_id;
+			td1.rowSpan = tableList.length + 1;
+			td1.style = "width: 60px;";
+			
+			var td1Element = document.createElement("INPUT");
+			
+			td1Element.id = "checkBox_" + id;
+			td1Element.type = "checkbox";
+			td1Element.style = "width: 100%; height: 20px;";
+
+			td1.appendChild(td1Element);
+
+			td2.id = "rule_mst_name_" + id + "_" + ii;
+			td2.rowSpan = tableList.length + 1;
+			td2.style = "width: 120px; height: 20px;";
+			td2.textContent = tableList[ii].rule_mst_name;
+
+			td3.id = "rule_status_" + id + "_" + ii;
+			td3.rowSpan = tableList.length + 1;
+			td3.style = "width: 80px; height: 20px;";
+			if(tableList[ii].rule_status == "True"){
+				td3.textContent = "발생";
+				table.style = "width: 1350px; border: 0.2em solid #cccccc; background-color : yellow";
+			}else{
+				td3.textContent = "미발생";
+			}
+			tr1.appendChild(td1);
+			tr1.appendChild(td2);
+			tr1.appendChild(td3);					
+
+		}
+		
+		td4.id = "url_" + id + "_" + ii;
+		td4.style = "width: 380px; height: 20px;";
+		
+		td5.id = "triger_value_" + id + "_" + ii; 
+		td5.style = "width: 50px; height: 20px;";
+		
+
+		td6.id = "rule_sign_" + id + "_" + ii;
+		td6.style = "width: 50px; height: 20px;";
+		
+		
+
+		td7.id = "triger_rule_" + id + "_" + ii;
+		td7.style = "width: 50px; height: 20px;";
+		
+		
+
+		td8.id = "triger_operator_" + id + "_" + ii;
+		td8.style = "width: 50px; height: 20px;";
+		
+
+		if(ii != 0){
+			
+			if(tableList[ii-1].url != tableList[ii].url){
+				
+				td4.textContent = tableList[ii].url;
+				td5.textContent = tableList[ii].triger_value;
+				td6.textContent = tableList[ii].triger_sign;
+				td7.textContent = tableList[ii].triger_rule;
+				td8.textContent = tableList[ii].triger_operator;
+				
+			}
+
+		}else{
+
+			td4.textContent = tableList[ii].url;
+			td5.textContent = tableList[ii].triger_value;
+			td6.textContent = tableList[ii].triger_sign;
+			td7.textContent = tableList[ii].triger_rule;
+			td8.textContent = tableList[ii].triger_operator;
+		}
+
+		td9.id = "result_triger_name_" + id + "_" + ii;
+		td9.style = "width: 380px; height: 20px;";
+
+
+		td10.id = "triger_result_" + id + "_" + ii;
+		td10.style = "width: 50px; height: 20px;";
+		
+		
+
+		td11.id = "triger_result_status_" + id + "_" + ii;
+		td11.style = "width: 80px; height: 20px;";
+		
+		if(ii != 0){
+			
+			if(tableList[ii-1].result_triger_name != tableList[ii].result_triger_name){
+				
+				td9.textContent = tableList[ii].result_triger_name;
+				td10.textContent = tableList[ii].triger_result;
+				td11.textContent = tableList[ii].triger_result_status;
+				
+			}
+
+		}else{
+
+			td9.textContent = tableList[ii].result_triger_name;
+			td10.textContent = tableList[ii].triger_result;
+			td11.textContent = tableList[ii].triger_result_status;
+		}
+		
+		tr1.appendChild(td4);
+		tr1.appendChild(td5);
+		tr1.appendChild(td6);
+		tr1.appendChild(td7);
+		tr1.appendChild(td8);
+		tr1.appendChild(td9);
+		tr1.appendChild(td10);
+		tr1.appendChild(td11);
+		
+		table.appendChild(tr1);
+	}
+
+	td.appendChild(table);
+	tr.appendChild(td);
+
+	tbody.appendChild(tr);
+	
+
+}
+
+function onem2mSettingButton_Click(){
+	if ($("#serverSetting").css("display") == "block") {
+		$("#serverSetting").css(
+				{
+					"display" : "none"
+				});
+	} else {
+		$("#serverSetting").css(
+				{
+					"display" : "block"
+				});
+	}
+	serverInfo();
+}
+
+function serverUpdateOkButton(){
+	if($("#si_ip").val() != null && $("#si_ip").val() !="null" && $("#si_ip").val() != ""){
+		$.ajax({
+			type : "POST",
+			url : "/ruleserverUpdate.do",
+			dataType : "json",
+			data:{
+				ip : $("#si_ip").val(),
+				port : $("#si_port").val(),
+				server_name : $("#si_name").val(),
+				in_cse : $("#in_cse").val()
+			},
+			success : function(data){
+				if (data.result == "Success"){
+					alert("변경되었습니다.");
+					onem2mSettingButton_Click();
+				}
+			}
+		});
+		
+	}
+	else{
+		alert("필수(IP)를 입력해주세요.")
+	}
+}
+
+function serverUpdateNoButton(){
+
+	onem2mSettingButton_Click();
+	
+}
+function condition(){
+	//조건
+	var condition_value = "";
+	for(i = 0; i < sensor_device_list.length; i++){
+		var chack_sensor_device_list_id = "";
+		if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+			for(j = 0; j < sensor_device_list.length; j++){
+				if($("#"+sensor_device_list[j].sensor_device_id+"_rule"+j).html() == sensor_device_list[i].sensor_device_id){
+					chack_sensor_device_list_id = "1";
+				}
+			}
+			if(chack_sensor_device_list_id != "1"){
+				condition_value = condition_value + "<tr id=\"condition_"+ sensor_device_list[i].sensor_device_id +"\">"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].url+"_rule"+i+"\" nowrap >"+sensor_device_list[i].url+"</td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+				+"<select id = \"choise_value"+i+"\">"
+				+"<option value = \"\"> 선택 </option>"
+				+"<option value = \"<\"> < </option>"
+				+"<option value = \">\"> > </option>"
+				+"<option value = \"<=\"> <= </option>"
+				+"<option value = \">=\"> >= </option>"
+				+"<option value = \"=\"> = </option>"
+				+"/<select>"
+				+"</td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+				+"<input type=\"text\" id=\"rule_value"+i+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+				+"<select id =\"choise_AND_OR"+i+"\">"
+				+"<option value = \"\"> 선택 </option>"
+				+"<option value = \"AND\"> AND </option>"
+				+"<option value = \"OR\"> OR </option>"
+				+"/<select>"
+				+"</td>"
+				+"<td style=\"width: 50px;\"><input id=\"conditionMinusButton\" type=\"button\" style=\"width: 100%; height: 25px;\" value=\"-\" onclick=\"javascript:conditionMinusButton_Click('condition_"+ sensor_device_list[i].sensor_device_id + "');\" /></td>"
+				+"</tr>"
+			}
+		}
+	}
+	$(condition_value).appendTo("#condition_list");
+	
+}
+function result(){
+	//결과
+	var result_value = "";
+	for(i = 0; i < sensor_device_list.length; i++){
+		var chack_sensor_device_list_id = "";
+		if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+			for(j = 0; j < sensor_device_list.length; j++){
+				if($("#"+sensor_device_list[j].sensor_device_id+"_result").html() == sensor_device_list[i].sensor_device_id){
+					chack_sensor_device_list_id = "1";
+				}
+			}
+			if(chack_sensor_device_list_id != "1"){
+				result_value = result_value + "<tr id=\"result_"+ sensor_device_list[i].sensor_device_id +"\">"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].url+"_result\" nowrap >"+sensor_device_list[i].url+"</td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\"  nowrap >"
+				+"<input type=\"text\" id=\""+sensor_device_list[i].sensor_device_id+"_result_value\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+				+"<td style=\"width: 50px;\"><input id=\"conditionMinusButton\" type=\"button\" style=\"width: 100%; height: 25px;\" value=\"-\" onclick=\"javascript:conditionMinusButton_Click('result_"+ sensor_device_list[i].sensor_device_id + "');\" /></td>"
+				+"</tr>"
+			}
+		}
+	}
+	$(result_value).appendTo("#result_list");
+	
+}
+function layer_open4(el){
+	$("#condition_list").html("");
+	$("#result_list").html("");
+	$("#rule_title").val("");
+	$("#rule_place").val("");
+	$("#sensor_device").html("");
+	list_sensor_device();
+	var temp = $('#' + el);
+	var bg = temp.prev().hasClass('bg4');	//dimmed 레이어를 감지하기 위한 boolean 변수
+
+	if(bg){
+		$('.layer4').fadeIn();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다. 
+	}else{
+		temp.fadeIn();
+	}
+
+	// 화면의 중앙에 레이어를 띄운다.
+	if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');
+	else temp.css('top', '0px');
+	if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');
+	else temp.css('left', '0px');
+
+	temp.find('a.cbtn4').click(function(e){
+		if(bg){
+			$('.layer4').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+		}else{
+			temp.fadeOut();
+		}
+		e.preventDefault();
+	});
+	temp.find('a.cbtn24').click(function(e){
+		if(bg){
+			$('.layer4').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+		}else{
+			temp.fadeOut();
+		}
+		e.preventDefault();
+	});
+	$('.layer4 .bg4').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+		$('.layer4').fadeOut();
+		e.preventDefault();
+	});
+
+}
+function layer_open5(el){
+	$("#condition_list").html("");
+	$("#result_list").html("");
+	$("#rule_title").val("");
+	$("#rule_place").val("");
+	$("#sensor_device").html("");
+	list_sensor_device();
+	var revise_info = "";
+	var revise_place = "";
+	var revise_data = [];
+	$("#revise_condition_list").html("");
+	$("#revise_result_list").html("");
+	$.ajax({
+		type : "POST",
+		url : "/rule.do",
+		dataType : "json",
+		success : function(data){
+			for(i = 0; i < data.rows.length; i++){
+	 			if($(":checkbox[id='checkBox_"+data.rows[i].rule_mst_id+"']:checked").val()=="on"){
+	 				revise_data[i] = data.rows[i];
+	 				revise_id = data.rows[i].rule_mst_id;
+	 				revise_info = data.rows[i].rule_mst_name;
+	 				revise_place = data.rows[i].rule_mst_place;
+	 				
+	 	 		}
+	 		}
+			$('#revice_rule_title').val(revise_info);
+			$('#revice_rule_place').val(revise_place);
+			revise_sensor_device_info(revise_data, revise_id);
+		//	mst_delete(revise_info);
+		}
+	}); 
+	
+	var temp = $('#' + el);
+	var bg = temp.prev().hasClass('bg5');	//dimmed 레이어를 감지하기 위한 boolean 변수
+
+	if(bg){
+		$('.layer5').fadeIn();	//'bg' 클래스가 존재하면 레이어가 나타나고 배경은 dimmed 된다. 
+	}else{
+		temp.fadeIn();
+	}
+
+	// 화면의 중앙에 레이어를 띄운다.
+	if (temp.outerHeight() < $(document).height() ) temp.css('margin-top', '-'+temp.outerHeight()/2+'px');
+	else temp.css('top', '0px');
+	if (temp.outerWidth() < $(document).width() ) temp.css('margin-left', '-'+temp.outerWidth()/2+'px');
+	else temp.css('left', '0px');
+
+	temp.find('a.cbtn5').click(function(e){
+		if(bg){
+			$('.layer5').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+		}else{
+			temp.fadeOut();
+		}
+		e.preventDefault();
+	});
+	temp.find('a.cbtn25').click(function(e){
+		if(bg){
+			$('.layer5').fadeOut(); //'bg' 클래스가 존재하면 레이어를 사라지게 한다. 
+		}else{
+			temp.fadeOut();
+		}
+		e.preventDefault();
+	});
+	$('.layer5 .bg5').click(function(e){	//배경을 클릭하면 레이어를 사라지게 하는 이벤트 핸들러
+		$('.layer5').fadeOut();
+		e.preventDefault();
+	});
+	
+	
+}
+function revise_sensor_device_info(revise_data, revise_id){
+	var revise_condition_list = "";
+	
+	$.ajax({
+		type : "POST",
+		url : "/ruleinfo.do",
+		dataType : "json",
+		success : function(data){
+			for(i = 0; i < data.rows.length; i++){
+					if(revise_id == data.rows[i].rule_mst_id ){
+							
+							revise_condition_list = revise_condition_list +"<tr id=\"revise_sensor_device_info_"+ data.rows[i].sensor_device_id +"\">"
+							+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+data.rows[i].sensor_device_id+"_rule_update\" nowrap >"+data.rows[i].url+"</td>"
+							+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+							+"<select id = \"choise_value_update"+data.rows[i].sensor_device_id+"\">"
+							+"<option value = \""+data.rows[i].triger_sign+"\"> "+data.rows[i].triger_sign+" </option>"
+							+"<option value = \"\"> 선택 </option>"
+							+"<option value = \"<\"> < </option>"
+							+"<option value = \">\"> > </option>"
+							+"<option value = \"<=\"> <= </option>"
+							+"<option value = \">=\"> >= </option>"
+							+"<option value = \"=\"> = </option>"
+							+"/<select>"
+							+"</td>"
+							+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+							+"<input type=\"text\" id=\"rule_value_update"+data.rows[i].sensor_device_id+"\" value = \""+data.rows[i].triger_rule+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+							+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+							+"<select id =\"choise_AND_OR_update"+data.rows[i].sensor_device_id+"\">"
+							+"<option value = \""+data.rows[i].triger_operator+"\"> "+data.rows[i].triger_operator+" </option>"
+							+"<option value = \"\"> 선택 </option>"
+							+"<option value = \"AND\"> AND </option>"
+							+"<option value = \"OR\"> OR </option>"
+							+"/<select>"
+							+"</td>"
+							+"<td style=\"width: 50px;\"><input id=\"conditionMinusButton\" type=\"button\" style=\"width: 100%; height: 25px;\" value=\"-\" onclick=\"javascript:conditionMinusButton_Click('revise_sensor_device_info_"+ data.rows[i].sensor_device_id + "');\" /></td>"
+							+"</tr>"
+					}
+	 			
+			}
+			
+			$(revise_condition_list).appendTo("#revise_condition_list");
+			revise_result(revise_data, revise_id);
+			
+		}
+	});
+		
+}
+function revise_result(revise_data, revise_id){
+	var revise_result_list = "";
+	$.ajax({
+		type : "POST",
+		url : "/ruleresult.do",
+		dataType : "json",
+		success : function(data){
+			for(i = 0; i < data.rows.length; i++){
+					if(revise_id == data.rows[i].rule_mst_id && data.rows[i].rule_mst_id != "null" && data.rows[i].rule_mst_id != "" && data.rows[i].rule_mst_id != null){
+						
+							revise_result_list = revise_result_list +"<tr id=\"revise_result2_"+ data.rows[i].sensor_device_id +"\">"
+							+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+data.rows[i].triger_name+"_result_update\" nowrap >"+data.rows[i].url+"</td>"
+							+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\"  nowrap >"
+							+"<input type=\"text\" placeholder = \"On/Off\" id=\""+data.rows[i].triger_name+"_result_value_update\" value = \""+data.rows[i].triger_result+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+							+"<td style=\"width: 50px;\"><input id=\"conditionMinusButton\" type=\"button\" style=\"width: 100%; height: 25px;\" value=\"-\" onclick=\"javascript:conditionMinusButton_Click('revise_result2_"+ data.rows[i].sensor_device_id + "');\" /></td>"
+							+"</tr>"
+						}
+						
+					}
+			$(revise_result_list).appendTo("#revise_result_list");
+			}
+			
+	});
+}
+function dbButton_Click(){
+	window.open('DB.html');
+}
+function deleteButton_Click(){
+	for(i = 0; i < ruleList.rows.length; i++){
+		if($(":checkbox[id='checkBox_" + ruleList.rows[i].rule_mst_id + "']:checked").val()=="on"){
+			var ae = ruleList.rows[i].url.split('/');;
+
+			deletesm(ae[0]);
+			deleteDb(ruleList.rows[i].rule_mst_id);
+		}
+	}
+}
+
+//"ONSB_InTemperature01_033/Power/status"
+
+function deletesm(id){
+	var urlVar = "";
+	$.ajax({
+		type : "POST",
+		url : "http://" + ip + "/deletesm",
+		dataType : "json",
+		headers: {
+			'ae' : id,
+			'url' : urlVar,
+		    'X-M2M-Origin' : "deletesm",
+		    'X-M2M-RI' : "deletesm",
+		    'content_type': "application/vnd.onem2m-res+json"
+			
+	    },
+		success : function(data) {
+
+			if (data.result == "Success"){
+			}
+		}
+	});
+}
+
+function deleteDb(device_id){
+			$.ajax({
+				type : "POST",
+				url : "/ruleDelete.do",
+				dataType : "json",
+				data:{
+					rule_mst_id : device_id,
+				},
+				success : function(data){
+					info_delete(device_id);
+				}
+			});
+}
+function info_delete(device_id){
+			$.ajax({
+				type : "POST",
+				url : "/ruleinfoDelete.do",
+				dataType : "json",
+				data:{
+					rule_mst_id : device_id,
+				},
+				success : function(data){
+					result_delete(device_id);
+				}
+			});
+}
+function result_delete(device_id){
+			$.ajax({
+				type : "POST",
+				url : "/ruleresultDelete.do",
+				dataType : "json",
+				data:{
+					rule_mst_id : device_id,
+				},
+				success : function(data){
+			
+					location.reload();
+				}
+			});
+}
+
+function insertbutton_rule_click(){
+
+			if($("#rule_title").val() != null && $("#rule_title").val() != "null" && $("#rule_title").val() != undefined && $("#rule_title").val() != "undefined" && $("#rule_title").val() != ""){
+				var check_rule = "";
+				var ruls_status = "False";
+				var rule_value = "off";
+				$.ajax({
+					type : "POST",
+					url : "/ruleInsert.do",
+					dataType : "json",
+					data:{
+						rule_mst_name : $("#rule_title").val(),
+						rule_status : ruls_status,
+						ruls_value : rule_value
+					},
+					success : function(data){
+						load_rule();
+						
+					}
+
+				});
+				
+			}else{
+				alert("상황 제목을 입력해 주세요");
+			}
+}
+function load_rule(){
+	var load_rule_data_mst = "";
+	var load_rule_data_mst_id = "";
+	$.ajax({
+		type : "POST",
+		url : "/rule.do",
+		dataType : "json",
+		success : function(data){
+			if (data != null && data != "null") {
+				for(i = 0; i < data.rows.length; i++){
+					load_rule_data_mst = data.rows[i].rule_mst_id;
+				}
+			}
+			load_rule_data_mst_id = load_rule_data_mst.split('e'); //value 받은 값 배열로 변환
+			rule_info_insert(load_rule_data_mst_id);
+		}
+	});
+}
+
+function rule_info_insert(load_rule_data_mst_id){
+	var rank = 0;
+	for(i = 0; i < sensor_device_list.length; i++){
+		if($("#rule_value"+i+"").val()!= null && $("#rule_value"+i+"").val()!="null"){
+			
+			var rule_value = $("#rule_value"+i+"").val();
+			if($("#rule_value"+i+"").val() == ""){
+				rule_value = "0";
+			}
+			var triger_value = "0";
+				
+				$.ajax({
+					type : "POST",
+					url : "/ruleinfoInsert.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : "rule"+load_rule_data_mst_id[1],
+						rule_detail_id : "detail"+load_rule_data_mst_id[1],
+						triger_id :  "triger"+load_rule_data_mst_id[1],
+						sensor_device_id : sensor_device_list[i].id,
+						triger_rule : rule_value,
+						triger_name :$("#"+sensor_device_list[i].sensor_device_id+"_rule"+i).text(),
+						triger_sign : $("#choise_value"+i+"").val(),
+						triger_value : triger_value,
+						triger_operator : $("#choise_AND_OR"+i+"").val(),
+						triger_rank : rank,
+						url : sensor_device_list[i].url,
+						origin : sensor_device_list[i].origin,
+						function_name : sensor_device_list[i].function_name,
+						device_type : sensor_device_list[i].device_type
+					},
+					success : function(data){
+						
+					}
+				});
+				rank = rank + 1;
+		}
+	}
+	rule_result_insert(load_rule_data_mst_id, rule_value);
+}
+function rule_result_insert(load_rule_data_mst_id){
+	var chack_sensor_device_list_name = "";
+	for(i = 0; i < sensor_device_list.length; i++){
+		if(chack_sensor_device_list_name != sensor_device_list[i].sensor_device_id){
+			chack_sensor_device_list_name = sensor_device_list[i].sensor_device_id;
+			
+			if($("#"+sensor_device_list[i].sensor_device_id+"_result_value").val() != null){
+				var result_value = $("#"+sensor_device_list[i].sensor_device_id+"_result_value").val();
+				if($("#"+sensor_device_list[i].sensor_device_id+"_result_value").val() == ""){
+					result_value = "0";
+				}
+				$.ajax({
+					type : "POST",
+					url : "/ruleresultInsert.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : "rule"+load_rule_data_mst_id[1],
+						rule_detail_id : "detail"+load_rule_data_mst_id[1],
+						triger_id :"result"+load_rule_data_mst_id[1],
+						triger_name :sensor_device_list[i].url,
+						triger_result : result_value,
+					},
+					success : function(data){
+						
+						location.reload();
+					}
+				});
+				}
+					
+		}
+		
+	}
+}
+function update_info_rule_mst(){
+	var rule_data_info = [];
+	var rule_data_total = [];
+	$.ajax({
+		type : "POST",
+		url : "/rulesensordevice.do",
+		dataType : "json",
+		success : function(data){
+			for(i = 0; i < data.rows.length; i++){
+				if(revise_id == data.rows[i].rule_mst_id){
+					rule_data_info[i] = data.rows[i];
+				}else{
+					rule_data_info[i] = "";
+				}
+				rule_data_total[i] = data.rows[i];
+			}
+			update_button_rule_mst(rule_data_info, rule_data_total);
+		}
+	});
+	
+}
+
+function update_button_rule_mst(rule_data_info, rule_data_total){
+	$.ajax({
+		type : "POST",
+		url : "/Updaterulemst.do",
+		dataType : "json",
+		data:{
+			rule_mst_id : revise_id,
+			rule_mst_name : $("#revice_rule_title").val(),
+			rule_mst_place : $("#revice_rule_place").val()
+		},
+		success : function(data){
+			check_rule_result(rule_data_info, rule_data_total);
+		}
+	});
+	
+}
+
+function check_rule_result(rule_data_info, rule_data_total){
+	var data_check_rule_result = [];
+	$.ajax({
+		type : "POST",
+		url : "/ruleresult.do",
+		dataType : "json",
+		success : function(data){
+			for(i = 0; i < data.rows.length; i++){
+			data_check_rule_result[i] = data.rows[i];
+			}
+			update_delete_rule_info(rule_data_info, rule_data_total, data_check_rule_result);
+		}
+	});
+}
+
+function update_delete_rule_info(rule_data_info, rule_data_total, data_check_rule_result){
+	$.ajax({
+		type : "POST",
+		url : "/ruleinfoDelete.do",
+		dataType : "json",
+		data:{
+			rule_mst_id : revise_id,
+		},
+		success : function(data){
+			update_insert_rule_info(rule_data_info, rule_data_total, data_check_rule_result);
+		}
+	});
+	
+}
+
+function update_insert_rule_info(rule_data_info, rule_data_total, data_check_rule_result){
+	var revise_number_id = [];
+	revise_number_id = revise_id.split('e');
+	var rank = 0;
+	for(i = 0; i < sensor_device_list.length; i++){
+		if($("#"+sensor_device_list[i].id+"_rule_update").text()!= null && $("#"+sensor_device_list[i].id+"_rule_update").text()!="null" && $("#"+sensor_device_list[i].id+"_rule_update").text() !=""){
+			//delay();
+			
+			var rule_value_update = $("#rule_value_update"+sensor_device_list[i].id+"").val();
+			if($("#rule_value_update"+sensor_device_list[i].id+"").val() == ""){
+				rule_value_update = "0";
+			}
+			var triger_value = "0";
+				$.ajax({
+					type : "POST",
+					url : "/ruleinfoInsert.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : revise_id,
+						rule_detail_id : "detail" + revise_number_id[1],
+						triger_id : "triger" + revise_number_id[1],
+						sensor_device_id : sensor_device_list[i].id,
+						triger_rule : rule_value_update,
+						triger_name :$("#"+sensor_device_list[i].id+"_rule_update").text(),
+						triger_sign : $("#choise_value_update"+sensor_device_list[i].id).val(),
+						triger_value : triger_value,
+						triger_operator : $("#choise_AND_OR_update"+sensor_device_list[i].id).val(),
+						triger_rank : rank,
+						url : sensor_device_list[i].url,
+						origin : sensor_device_list[i].origin,
+						function_name : sensor_device_list[i].function_name,
+						device_type : sensor_device_list[i].device_type,
+					},
+					success : function(data){
+					}
+				});
+				rank = rank + 1;
+			
+			
+			
+		}
+	}
+	update_insert_rule_info_device(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id);
+}
+
+function update_insert_rule_info_device(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id){
+	update_rule_result_delete(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id);
+}
+
+function update_rule_result_delete(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id){
+	$.ajax({
+		type : "POST",
+		url : "/ruleresultDelete.do",
+		dataType : "json",
+		data:{
+			rule_mst_id : revise_id,
+		},
+		success : function(data){
+			update_rule_result_insert(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id);
+		}
+	});
+}
+function update_rule_result_insert(rule_data_info, rule_data_total, data_check_rule_result, revise_number_id){
+	var chack_sensor_device = "";
+	for(var ii = 0; ii < sensor_device_list.length; ii++){
+			if($("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text() != "null" && $("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text() != null && $("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text() != ""){
+				var result_value_update = "0";
+				var result_value_update = $("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val();
+				if($("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val() != ""){
+					result_value_update = "0";
+				}
+				
+				$.ajax({
+					type : "POST",
+					url : "/ruleresultInsert.do",
+					dataType : "json",
+					data:{
+						rule_mst_id : revise_id,
+						rule_detail_id : "detail" + revise_number_id[1],
+						triger_id : "result" + revise_number_id[1],
+						triger_name : $("#"+sensor_device_list[ii].sensor_device_id+"_result_update").text(),
+						triger_result : $("#"+sensor_device_list[ii].sensor_device_id+"_result_value_update").val()
+					},
+					success : function(data){
+					}
+				});
+				chack_sensor_device = sensor_device_list[ii].sensor_device_id;
+			}
+		
+	}
+	location.reload();
+	
+}
+function revise_result2(){
+	//결과
+	var revise_result = "";
+	for(i = 0; i < sensor_device_list.length; i++){
+		var chack_sensor_device_list_id = "";
+		if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+			for(j = 0; j < sensor_device_list.length; j++){
+				if($("#"+sensor_device_list[j].sensor_device_id+"_result_update").html() == sensor_device_list[i].sensor_device_id){
+					chack_sensor_device_list_id = "1";
+				}
+			}
+			if(chack_sensor_device_list_id != "1"){
+				revise_result = revise_result +"<tr id=\"revise_result2_"+ sensor_device_list[i].sensor_device_id +"\">"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].sensor_device_id+"_result_update\" nowrap >"+sensor_device_list[i].url+"</td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\"  nowrap >"
+				+"<input type=\"text\" placeholder = \"On/Off\" id=\""+sensor_device_list[i].sensor_device_id+"_result_value_update\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+				+"<td style=\"width: 50px;\"><input id=\"conditionMinusButton\" type=\"button\" style=\"width: 100%; height: 25px;\" value=\"-\" onclick=\"javascript:conditionMinusButton_Click('revise_result2_"+ sensor_device_list[i].sensor_device_id + "');\" /></td>"
+				+"</tr>"
+			}
+			
+			
+		}
+	}
+	$(revise_result).appendTo("#revise_result_list");
+	
+}
+function revise_condition(){
+	//조건
+	var revise_condition_list = "";
+	for(i = 0; i < sensor_device_list.length; i++){
+		var chack_sensor_device_list_id = "";
+		if($(":checkbox[id='catagory_list"+i+"']:checked").val()=="on"){
+			for(j = 0; j < sensor_device_list.length; j++){
+				if($("#"+sensor_device_list[j].id+"_rule_update").html() == sensor_device_list[i].sensor_device_id){
+					chack_sensor_device_list_id = "1";
+				}
+			}
+			if(chack_sensor_device_list_id != "1"){
+				revise_condition_list = revise_condition_list + "<tr id=\"revise_condition_"+ sensor_device_list[i].sensor_device_id +"\">"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" id=\""+sensor_device_list[i].id+"_rule_update\" nowrap >"+sensor_device_list[i].url+"</td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+				+"<select id = \"choise_value_update"+sensor_device_list[i].sensor_device_id+"\">"
+				+"<option value = \"\"> 선택 </option>"
+				+"<option value = \"<\"> < </option>"
+				+"<option value = \">\"> > </option>"
+				+"<option value = \"<=\"> <= </option>"
+				+"<option value = \">=\"> >= </option>"
+				+"<option value = \"=\"> = </option>"
+				+"/<select>"
+				+"</td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+				+"<input type=\"text\" id=\"rule_value_update"+i+"\" style=\"width:90%; height:90%; color:#000; text-align:center\"></td>"
+				+"<td height=\"25px\" style=\"text-overflow:ellipsis; overflow:hidden; white-space:nowrap; font-size:10px\" nowrap >"
+				+"<select id =\"choise_AND_OR_update"+sensor_device_list[i].sensor_device_id+"\">"
+				+"<option value = \"\"> 선택 </option>"
+				+"<option value = \"AND\"> AND </option>"
+				+"<option value = \"OR\"> OR </option>"
+				+"/<select>"
+				+"</td>"
+				+"<td style=\"width: 50px;\"><input id=\"conditionMinusButton\" type=\"button\" style=\"width: 100%; height: 25px;\" value=\"-\" onclick=\"javascript:conditionMinusButton_Click('revise_condition_"+ sensor_device_list[i].sensor_device_id + "');\" /></td>"
+				+"</tr>"
+			}
+			
+		}
+	}
+	$(revise_condition_list).appendTo("#revise_condition_list");
+	
+}
+function conditionMinusButton_Click(obj){
+	  $("#" + obj).remove();
+	  
+} 
+</script>
+</head>
+
+<body>
+	<table id="rule_table" width="1370" style="border: 0.1em solid #cccccc; background-color: #ffffff;" align="center">
+		<tr>
+			<td>
+				<table width="1350" height="50" align="center">
+					<tr>
+						<td>룰 트리거</td>
+						<td></td>
+						<td style="width: 125px;"><input id="dbButton" type="button" style="width: 100%; height: 100%;" value="센서/디바이스 등록" onclick="javascript:dbButton_Click();"/></td>
+						<td style="width: 125px;"><input id="onem2mSettingButton" type="button" style="width: 100%; height: 100%;" value="서버 설정 " onclick="javascript:onem2mSettingButton_Click();"/></td>
+						<td style="width: 125px;"><input id="addButton" type="button" style="width: 100%; height: 100%;" value="상황등록" onclick="layer_open4('layer24');return false;"/></td>
+						<td style="width: 125px;"><input id="modifyButton" type="button" style="width: 100%; height: 100%;" value="상황수정" onclick="layer_open5('layer25');return false;"/></td>
+						<td style="width: 125px;"><input id="deleteButton" type="button" style="width: 100%; height: 100%;" value="상황삭제" onclick="javascript:deleteButton_Click();"/></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<table width="1350" height="30" border="1" align="center" >
+					<tr>
+						<td style="width: 60px;">구분</td>
+						<td style="width: 120px;">상황명</td>
+						<td style="width: 80px;">상황 상태</td>
+						<td style="width: 380px;">URL</td>
+						<td style="width: 50px;">현재값</td>
+						<td style="width: 50px;">등호</td>
+						<td style="width: 50px;">조건값</td>
+						<td style="width: 50px;">연산자</td>
+						<td style="width: 380px;">결과항목</td>
+						<td style="width: 50px;">반영값</td>
+						<td style="width: 80px;">반영결과</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div id="serverSetting" style="border: 0.2em solid #000000; background-color: white; width: 320px; height: 300px; position: absolute; top: 10%; left: 40%;  z-index: 10; display: none;">
+					<table style="width:100%; height:100%">  <!--// 상단 content-->
+						<tr height="10px"></tr>
+						<tr>
+							<td style="font-size: 15px;">서버 설정</td>
+						</tr>
+						<tr>
+							<td>
+								<table id=serverlist>
+									<tr>
+										<td style="width: 100px;">SI IP</td>
+										<td style="width: 200px;"><input id="si_ip" type="text" style="width: 100%; height: 20px;"></td>
+									</tr>
+									<tr>
+										<td style="width: 100px;">Port</td>
+										<td style="width: 200px;"><input id="si_port" type="text" style="width: 100%; height: 20px;"></td>
+									</tr>
+									<tr>
+										<td style="width: 100px;">Server Name</td>
+										<td style="width: 200px;"><input id="si_name" type="text" style="width: 100%; height: 20px;"></td>
+									</tr>
+									<tr>
+										<td style="width: 100px;">IN/CSE</td>
+										<td style="width: 200px;"><input id="in_cse" type="text" style="width: 100%; height: 20px;"></td>
+									</tr>
+								</table>
+		
+							</td>
+						</tr>
+						<tr>
+							<td align="center">
+								<input id="serverUpdateOkButton" type="button" style="width: 100px; height: 30px;" value="등록" onclick="javascript:serverUpdateOkButton();"/>
+								<input id="serverUpdateNoButton" type="button" style="width: 100px; height: 30px;" value="닫기" onclick="javascript:serverUpdateNoButton();"/>
+							</td>
+						</tr>
+		
+					</table>
+				</div>
+			</td>
+		</tr>
+		<!-- 
+		<tr>
+			<td>
+				<div id="ruleRegi" style="border: 0.2em solid #000000; background-color: white; width: 1200px; height: 700px; position: absolute; top: 10%; left: 20%;  z-index: 10; /*display: none;*/">
+					<table style=" width:100%; height:100%">  
+						<tr height="10px"></tr>
+						<tr>
+							<td id="ruleRegiText">상황등록</td>
+						</tr>
+						<tr>
+							<td style="width: 100px;">상황제목<input id="rule_title" type="text" style="width: 100%; height: 20px;"></td>
+							<td></td>
+							<td align="right">
+								<input id="ruleRegiOkButton" type="button" style="width: 100px; height: 30px;" value="등록" onclick="javascript:ruleRegiOkButton();"/>
+								<input id="ruleRegiInitButton" type="button" style="width: 100px; height: 30px;" value="초기화" onclick="javascript:ruleRegiInitButton();"/>
+								<input id="ruleRegiCloseButton" type="button" style="width: 100px; height: 30px;" value="닫기" onclick="javascript:ruleRegiCloseButton();"/>
+							</td>
+						</tr>
+						<tr>
+							<td>조건(현재값 등호 설정값)</td>
+							<td></td>
+							<td>결과</td>
+						</tr>
+						<tr>
+							<td>
+								<table id=conditionList style="width: 600px;">
+										<tr>
+											<td style="width: 400px;">URL</td>
+											<td style="width: 50px;">등호</td>
+											<td style="width: 50px;">설정값</td>
+											<td style="width: 50px;">연산자</td>
+											<td style="width: 50px;"><input id="condition_plus_button" type="button" style="width: 30px; height: 30px;" value="+" onclick="javascript:condition_plus_button();"/></td>
+											
+										</tr>
+									</table>
+							</td>
+							<td></td>
+							<td></td>
+						</tr>
+						<tr>
+							<td style="border: 0.2em solid #cccccc;">
+								<div style="overflow:auto; width:630px; height:500px; padding:4px;">
+									<table>
+										<tr>
+											<td>
+												<table id=conditionList style="width: 600px; table-layout:fixed;">
+													<tr>
+														<td style="width: 400px;"></td>
+														<td style="width: 50px;"><input id="condition_triger_sign_0" type="text" style="width: 95%; height: 30px;"/></td>
+														<td style="width: 50px;"><input id="condition_triger_rule_0" type="text" style="width: 95%; height: 30px;"/></td>
+														<td style="width: 50px;"><input id="condition_triger_operator_0" type="text" style="width: 95%; height: 30px;"/></td>
+														<td style="width: 50px;"><input id="condition_minusButton" type="button" style="width: 30px; height: 30px;" value="-" onclick="javascript:condition_minusButton(0);"/></td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+									</table>
+									
+									<table id=conditionList style="width: 600px; table-layout:fixed;">
+										<tr>
+											<td style="width: 400px;"></td>
+											<td style="width: 50px;"><input id="condition_triger_sign_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_triger_rule_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_triger_operator_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_minusButton" type="button" style="width: 30px; height: 30px;" value="-" onclick="javascript:condition_minusButton(0);"/></td>
+										</tr>
+									</table>
+									<table id=conditionList style="width: 600px; table-layout:fixed;">
+										<tr>
+											<td style="width: 400px;"></td>
+											<td style="width: 50px;"><input id="condition_triger_sign_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_triger_rule_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_triger_operator_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_minusButton" type="button" style="width: 30px; height: 30px;" value="-" onclick="javascript:condition_minusButton(0);"/></td>
+										</tr>
+									</table>
+									<table id=conditionList style="width: 600px; table-layout:fixed;">
+										<tr>
+											<td style="width: 400px;"></td>
+											<td style="width: 50px;"><input id="condition_triger_sign_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_triger_rule_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_triger_operator_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_minusButton" type="button" style="width: 30px; height: 30px;" value="-" onclick="javascript:condition_minusButton(0);"/></td>
+										</tr>
+									</table>
+								</div>
+							</td>
+							<td>
+								<div>
+								</div>
+							</td>
+							<td style="border: 0.2em solid #cccccc;">
+								<div style="overflow:auto; width:530px; height:500px; padding:4px;">
+									<table id=conditionList style="width: 500px; height: 500px; table-layout:fixed;">
+										<tr style="height: 30px;">
+											<td style="width: 400px;">URL</td>
+											<td style="width: 50px;">설정값</td>
+											<td style="width: 50px;"><input id="condition_plus_button" type="button" style="width: 30px; height: 30px;" value="+" onclick="javascript:condition_plus_button();"/></td>
+											
+										</tr>
+										<tr>
+											<td style="width: 400px;"></td>
+											<td style="width: 50px;"><input id="condition_triger_rule_0" type="text" style="width: 95%; height: 30px;"/></td>
+											<td style="width: 50px;"><input id="condition_minusButton" type="button" style="width: 30px; height: 30px;" value="-" onclick="javascript:condition_minusButton(0);"/></td>
+										</tr>
+										
+									</table>
+								</div>
+							</td>
+						</tr>
+						
+		
+					</table>
+				</div>
+			</td>
+		</tr>
+		-->
+	</table>
+	<div class="layer4">
+	<div class="bg4"></div>
+	<div id="layer24" class="pop-layer4">
+		<div class="pop-container4">
+			<div class="pop-conts4">
+			<table style="margin-left:10px; width:430px; height:300px">  <!--// 상단 content-->
+			<tr height="10px"></tr>
+			<tr>
+				<td style="font-size:15px; width:50px; text-align:center;">상황 제목</td>
+				<td><input type="text" placeholder="제목을 입력해 주세요" id = "rule_title" style="margin-left:11px; width:140px; height:20px; text-align:center;"></td>
+				<td width ="50px"></td>
+			</tr>
+			<tr height="20px"></tr>
+			<tr><td colspan = "5">
+			
+			<table style="margin-left:5px; font-size:10px" id = rule_list_check>
+			<tr>
+				<!-- 기간 table 예시 다른 곳 사용시 조금씩 수정 -->
+				<!-- 수정 완료후 border를 삭제 -->
+				<td style="vertical-align: top;">
+				<div style="width:410px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:400px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "25px">Check</th>
+						<th width = "375">URL</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "sensor_device">
+					</tbody>
+					</table>
+				</div>
+				</td>
+				
+				<td style="vertical-align: top; width : 100px;">
+					<table>
+					<tr height = "100px"></tr>
+						<tr>
+							<td>
+							<button onclick = "condition();" style="float:left; width:100px; height:25px; font-size:10px">조건</button>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "result();"  style="float:left; width:100px; height:25px; font-size:10px">결과</button>
+							</td>
+						</tr>
+					<tr height = "100px"></tr>
+					</table>
+				</td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:520px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:500px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "365px">URL</th>
+						<th width = "25px">등호</th>
+						<th width = "25px">Value</th>
+						<th width = "35px">연산자</th>
+						<th width = "50">삭제</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "condition_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+				
+				<td width ="10px"></td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:470px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:450px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "365px">URL</th>
+						<th width = "35px">Command</th>
+						<th width = "50">삭제</th>						
+					</tr>
+					</thead>
+					
+					<tbody id = "result_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+			</tr>
+			
+			<tr>
+				<td colspan = "5">
+					<table>
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "javascript:insertbutton_rule_click();" id = "insertbutton_rule" style="float:left; margin-left: 1250px; width:100px; height:25px; font-size:10px">등록</button>
+							<a href="#" class="cbtn24"><button onclick = ""  style="float:left; margin-left: 20px; width:100px; height:25px; font-size:10px">취소</button></a>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+					</table>
+				
+				</td>
+			</tr>
+			
+			<tr>
+				<td style="vertical-align: top;">
+				</td>
+				
+			</tr>
+			
+			</table>
+			
+			</td></tr>
+			<tr><td>
+			
+			</td></tr>
+			
+			</table>
+			
+			</div>
+		</div>
+	</div>
+</div>
+<div class="layer5">
+	<div class="bg5"></div>
+	<div id="layer25" class="pop-layer5">
+		<div class="pop-container5">
+			<div class="pop-conts5">
+			<table style="margin-left:10px; width:430px; height:300px">  <!--// 상단 content-->
+			<tr height="10px"></tr>
+			<tr>
+				<td style="font-size:15px; width:50px; text-align:center;">상황 제목</td>
+				<td><input type="text" placeholder="제목을 입력해 주세요" id = "revice_rule_title" style="margin-left:11px; width:140px; height:20px; text-align:center;"></td>
+				<td width ="50px"></td>
+			</tr>
+			<tr height="20px"></tr>
+			<tr><td colspan = "5">
+			
+			<table style="margin-left:5px; font-size:10px" id = rule_list_check>
+			<tr>
+				<!-- 기간 table 예시 다른 곳 사용시 조금씩 수정 -->
+				<!-- 수정 완료후 border를 삭제 -->
+				<td style="vertical-align: top;">
+				<div style="width:410px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:400px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "25px">Check</th>
+						<th width = "375">URL</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "revise_sensor_device">
+					</tbody>
+					</table>
+				</div>
+				</td>
+				
+				<td style="vertical-align: top; width : 150px;">
+					<table>
+					<tr height = "100px"></tr>
+						<tr>
+							<td>
+							<button onclick = "revise_condition();" style="float:left; width:100px; height:25px; font-size:10px">조건</button>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "revise_result2();"  style="float:left;width:100px; height:25px; font-size:10px">결과</button>
+							</td>
+						</tr>
+					<tr height = "100px"></tr>
+					</table>
+				</td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:520px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:500px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "365px">URL</th>
+						<th width = "25px">등호</th>
+						<th width = "25px">Value</th>
+						<th width = "35px">연산자</th>
+						<th width = "50px">삭제</th>
+					</tr>
+					</thead>
+					
+					<tbody id = "revise_condition_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+				
+				<td width ="10px"></td>
+				
+				<td style="vertical-align: top;">
+					<div style="width:470px; height:400px; overflow:auto">
+					<table border ="1" style="font-size:10px; text-align:center; width:450px; background-color:#fff">
+					<thead>
+					<tr>
+						<th width = "365px">URL</th>
+						<th width = "35px">Command</th>
+						<th width = "50px">삭제</th>							
+					</tr>
+					</thead>
+					
+					<tbody id = "revise_result_list">
+					</tbody>
+					</table>
+					</div>
+				</td>
+			</tr>
+			
+			<tr>
+				<td colspan = "5">
+					<table>
+					<tr height = "25px"></tr>
+						<tr>
+							<td>
+							<button onclick = "update_info_rule_mst();" id = "update_button_rule_mst" style="float:left; margin-left : 1250px; width:100px; height:25px; font-size:10px">변경</button>
+							<a href="#" class="cbtn25"><button onclick = ""  style="float:left; margin-left: 20px; width:100px; height:25px; font-size:10px">취소</button></a>
+							</td>
+						</tr>
+					<tr height = "25px"></tr>
+					</table>
+				
+				</td>
+			</tr>
+			
+			<tr>
+				<td style="vertical-align: top;">
+				</td>
+				
+			</tr>
+			
+			</table>
+			
+			</td></tr>
+			<tr><td>
+			
+			</td></tr>
+			
+			</table>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>

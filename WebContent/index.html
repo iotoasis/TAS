@@ -1,0 +1,470 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
+<link rel="stylesheet" href="./css/common.css">
+<title>TAS 관리 UI</title>
+<script type="text/javascript" src="../js/jquery-3.1.1.min.js"></script>
+
+<script type="text/javascript">
+var ip = location.hostname;
+
+var smartthingsList;
+
+
+$(document).ready(function() {
+	
+	start();
+	
+});
+
+function start(){
+	$("#smartthings_list").html("");
+	$.ajax({
+		type : "POST",
+		url : "/smartthingSelect.do",
+		dataType : "json",
+		success : function(data) {
+			if (data != null && data != "null") {
+				var tableString ="";
+				smartthingsList = data.rows;
+				
+				for(i = 0; i < data.rows.length; i++){
+					var id ="";
+					var device_id ="";
+					var path_status ="";
+					var token ="";
+					var device_name ="";
+					var path_command ="";
+					var api_url ="";
+					var ae ="";
+					var path_polling ="";
+					var status ="";
+
+					
+					id = data.rows[i].id;
+					device_id = data.rows[i].device_id;
+					path_status = data.rows[i].path_status;
+					token = data.rows[i].token;
+					device_name = data.rows[i].device_name;
+					path_command = data.rows[i].path_command;
+					api_url = data.rows[i].api_url;
+					ae = data.rows[i].ae;
+					path_polling = data.rows[i].path_polling;
+					status = data.rows[i].response_value;
+					
+					
+					tableString = tableString
+					+ "<table id =\"table_"+ id +"\"width=\"1400\" height=\"90\" style=\"border: 0.1em solid #cccccc; background-color: #ffffff; margin-top: 2px;\" align=\"center\" cellpadding=\"5\" >"
+					+ "<tr>"
+					+ "<td style=\"width: 25px;\" rowspan=\"4\"><input id=\"checkbox_"+ id + "\" type=\"checkbox\" style=\"width: 100%\" /></td>"
+					+ "<td style=\"width: 25px;\" rowspan=\"4\"><label id=\"label_"+ id + "\">" + id + "</label></td>"
+					+ "<td style=\"width: 150px;\"><input id=\"device_id_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"device_id\" value=\""+ device_id + "\"/></td>"
+					+ "<td style=\"width: 600px;\"><input id=\"path_status_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"path_status\" value=\""+ path_status + "\"/></td>"
+					+ "<td style=\"width: 600px;\"><input id=\"token_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"token\" value=\""+ token + "\"/></td>"
+					+ "</tr>"
+					+ "<tr>"
+					+ "<td><input id=\"device_name_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"device_name\" value=\""+ device_name + "\"/></td>"
+					+ "<td><input id=\"path_command_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"path_command\" value=\""+ path_command + "\"/></td>"
+					+ "<td><input id=\"api_url_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"api_url\" value=\""+ api_url + "\"/></td>"
+					+ "</tr>"
+					+ "<tr>"
+					+ "<td><input id=\"ae_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"ae\" value=\""+ ae + "\"/></td>"
+					+ "<td><input id=\"path_polling_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"path_polling\" value=\""+ path_polling + "\"/></td>"
+					+ "<td><input id=\"status_"+ id + "\" type=\"text\" style=\"width: 100%\" placeholder=\"status\" value=\""+ status + "\"/></td>"
+					+ "</tr>"
+					+ "<tr>"
+					+ "<td colspan=\"1\" ><input id=\"new_measurement_device_id_"+ id +"\" type=\"text\" style=\"width: 100%\" placeholder=\"measurement_device_id\" /></td>"
+					+ "<td colspan=\"3\" ><input id=\"new_measurement_"+ id +"\" type=\"text\" style=\"width: 100%\" placeholder=\"measurement\" /></td>"
+					+ "</tr>"
+					+ "</table>";
+					
+				}
+				
+				$(tableString).appendTo("#smartthings_list");
+				
+			}
+		}
+	});
+}
+
+function status(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			statusCall(smartthingsList[i].id, smartthingsList[i].device_id, smartthingsList[i].token, $("#status_" + smartthingsList[i].id).val());
+		}
+		
+		
+	}
+}
+
+function statusCall(id, deviceId, token, status){
+	
+	$.ajax({
+		type : "GET",
+		url : "http://"+ ip +":7001/status?" +"status=" + status + "&" + "deviceId=" + deviceId + "&" + "token=" + token,
+		dataType : "json",
+		beforeSend: function(xhr){
+	        //xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+		success : function(data) {
+			if (data != null && data != "null") {
+				$("#table_"+ id).css("background-color", "rgb(255, 255, 255)");
+				$("#status_" + id).val(status);
+			}
+		}
+	});
+}
+
+function getstatus(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			for(ix = 0; ix< 10; ix ++){
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			
+				getstatusCall(smartthingsList[i].id, smartthingsList[i].device_id, smartthingsList[i].token);	
+			}
+			
+		}
+		
+		
+	}
+}
+
+function getstatusCall(id, deviceId, token){
+	
+	$.ajax({
+		type : "GET",
+		url : "http://"+ ip +":7001/getstatus?" + "deviceId=" + deviceId + "&" + "token=" + token,
+		dataType : "json",
+		beforeSend: function(xhr){
+	        //xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+		success : function(data) {
+			if (data != null && data != "null") {
+				$("#table_"+ id).css("background-color", "rgb(255, 255, 255)");
+				$("#status_" + id).val(data.status);
+			}
+		}
+	});
+}
+
+function getmeasurement(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			getmeasurementCall(smartthingsList[i].id, smartthingsList[i].device_id, smartthingsList[i].token, smartthingsList[i].token, smartthingsList[i].token);
+		}
+		
+		
+	}
+}
+
+function getmeasurementCall(id, deviceId, token){
+	
+	$.ajax({
+		type : "POST",
+		url : "http://"+ ip +":7001/measurement?" + "deviceId=" + deviceId + "&" + "token=" + token,
+		dataType : "json",
+		beforeSend: function(xhr){
+	        //xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+		data: JSON.stringify({
+
+			deviceId : $("#new_measurement_device_id_" + id).val().trim(),
+			measurement : $("#new_measurement_" + id).val().trim() 
+			
+			}),
+		success : function(data) {
+			if (data != null && data != "null") {
+				$("#table_"+ id).css("background-color", "rgb(255, 255, 255)");
+				$("#status_" + id).val(data.status);
+			}
+		}
+	});
+}
+
+function smartstatus(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			
+			for(ix = 0; ix< 10; ix ++){
+				smartstatusCall(smartthingsList[i].id, smartthingsList[i].device_id, smartthingsList[i].token);	
+			}
+			
+		}
+		
+		
+	}
+}
+
+function smartstatusCall(id, deviceId, token){
+	
+	$.ajax({
+		type : "GET",
+		url : "http://"+ ip +":7001/smartstatus?" + "deviceId=" + deviceId + "&" + "token=" + token,
+		dataType : "json",
+		beforeSend: function(xhr){
+	        //xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+		success : function(data) {
+			if (data != null && data != "null") {
+				$("#table_"+ id).css("background-color", "rgb(255, 255, 255)");
+				$("#status_" + id).val(data.status);
+			}
+		}
+	});
+}
+
+
+function command(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			var status = $("#status_" + smartthingsList[i].id).val();
+			commandCall(smartthingsList[i].id, smartthingsList[i].api_url, smartthingsList[i].device_id, smartthingsList[i].token, status);
+		}
+		
+		
+	}
+}
+
+function commandCall(id, api_url, deviceId, token, status){
+	$.ajax({
+		url:"http://"+ ip +":7001/command?" +"status=" + status + "&" + "deviceId=" + deviceId + "&" + "token=" + token,
+	    type:"POST",
+	    beforeSend: function(xhr){
+	        xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+	    contentType:"application/json",
+	    beforeSend: function(xhr){
+	        //xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+	    success : function(data) {
+	  		if (data != null && data != "null") {
+	  			$("#table_"+ id).css("background-color", "rgb(255, 255, 255)");
+	  			$("#status_" + id).val(status);
+	  		}
+	  	}
+	});
+	
+}
+
+
+function smartstatusall(){
+	
+	$.ajax({
+		type : "GET",
+		url : "http://"+ ip +":7001/smartstatusall",
+		dataType : "json",
+		beforeSend: function(xhr){
+		},
+		success : function(data) {
+			if (data != null && data != "null") {
+				alert(data.status);
+			}
+		}
+	});
+}
+
+
+function insert(){
+	
+	if($("#new_device_id").val().trim()  != "" && $("#new_device_name").val().trim()  != "" && $("#new_path_status").val().trim()  != "" && $("#new_path_command").val().trim()  != "" && $("#new_path_polling").val().trim()  != "" && $("#new_token").val().trim()  != "" && $("#new_api_url").val().trim()  != "" && $("#new_ae").val().trim()  != "" && $("#new_value").val().trim()  != "" ){ 
+	
+		$.ajax({
+			type : "POST",
+			url : "/smartthingInsert.do",
+			dayaType : "json",
+			data : {
+				id : "",
+				device_id : $("#new_device_id").val().trim(),
+				device_name : $("#new_device_name").val().trim(),
+				response_value : "",
+				path_status : $("#new_path_status").val().trim(),
+				path_command : $("#new_path_command").val().trim(),
+				path_polling : $("#new_path_polling").val().trim(),
+				token : $("#new_token").val().trim(),
+				api_url : $("#new_api_url").val().trim(),
+				response_date :"",
+				ae :$("#new_ae").val().trim()
+			},
+			success : function(data) {
+				
+				ae($("#new_device_id").val().trim(), $("#new_token").val().trim(), $("#new_value").val().trim());
+				
+			},
+			error : function(request, status, error) {
+	
+			}
+		});
+	}else{
+		alert("입력한 값을 확인하세요.");
+	}
+}
+
+
+
+function ae(id, deviceId, token, status){
+	
+	$.ajax({
+		type : "GET",
+		url : "http://"+ ip +":7001/status?" +"status=" + status + "&" + "deviceId=" + deviceId + "&" + "token=" + token,
+		dataType : "json",
+		beforeSend: function(xhr){
+	        //xhr.setRequestHeader("ae", $("#ae_" + id).val().trim());
+		},
+		success : function(data) {
+			if (data != null && data != "null") {
+				location.reload();
+			}
+		}
+	});
+}
+
+function update(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			updateCall(i);
+		}
+	}
+	
+	start();
+}
+
+function updateCall(i){
+	var index = smartthingsList[i].id;
+	
+		$.ajax({
+			type : "POST",
+			url : "/smartthingUpdate.do",
+			dayaType : "json",
+			data : {
+				id : index,
+				device_id : $("#device_id_" + index).val().trim(),
+				device_name : $("#device_name_" + index).val().trim(),
+				path_status : $("#path_status_" + index).val().trim(),
+				path_command : $("#path_command_" + index).val().trim(),
+				path_polling : $("#path_polling_" + index).val().trim(),
+				token : $("#token_" + index).val().trim(),
+				api_url : $("#api_url_" + index).val().trim(),
+				ae : $("#ae_" + index).val().trim()
+			},
+			success : function(data) {
+				
+			},
+			error : function(request, status, error) {
+	
+			}
+		});
+}
+
+function del(){
+	
+	for(i = 0; i < smartthingsList.length; i++){
+		if($(":checkbox[id='checkbox_" + smartthingsList[i].id + "']:checked").val()=="on"){
+			//#62f568
+			$("#table_"+ smartthingsList[i].id).css("background-color", "rgb(98, 245, 104)");
+			delCall(i);
+		}
+	}
+	
+	start();
+}
+
+function delCall(i){
+	var index = smartthingsList[i].id;
+	
+		$.ajax({
+			type : "POST",
+			url : "/smartthingDelete.do",
+			dayaType : "json",
+			data : {
+				id : index
+			},
+			success : function(data) {
+				
+			},
+			error : function(request, status, error) {
+	
+			}
+		});
+}
+
+</script>
+</head>
+
+<body>
+	<table width="1450" style="border: 0.1em solid #cccccc; background-color: #ffffff;" align="center">
+		<!-- 메뉴 -->
+		<tr>
+			<td>
+				<table width="1400" height="100" align="center">
+					<tr>
+						<td>SMART THINGS 관리 UI</td>
+						<td><input type="button" style="width: 100px;" value="조회" onclick="javascript:start();" /></td>
+						<td><input type="button" style="width: 100px;" value="수정" onclick="javascript:update();" /></td>
+						<td><input type="button" style="width: 100px;" value="삭제" onclick="javascript:del();" /></td>
+						<td><input type="button" style="width: 100px;" value="status" onclick="javascript:status();" /></td>
+						<td><input type="button" style="width: 100px;" value="getstatus" onclick="javascript:getstatus();" /></td>
+						<td><input type="button" style="width: 100px;" value="measurement" onclick="javascript:getmeasurement();" /></td>
+						<td><input type="button" style="width: 100px;" value="smartstatus" onclick="javascript:smartstatus();" /></td>
+						<td><input type="button" style="width: 100px;" value="command" onclick="javascript:command();" /></td>
+						<td><input type="button" style="width: 100px;" value="smartstatusall" onclick="javascript:smartstatusall();" /></td>
+					</tr>
+				</table>
+			</td>
+			
+		</tr>
+		<!-- 등록 리스트 -->
+		<tr>
+			<td>
+				<table width="1400" height="90" style="border: 0.2em solid #cccccc; background-color: #ffffff;" align="center" cellpadding="5" >
+					<tr>
+						<td style="width: 25px;" rowspan="4"></td>
+						<td style="width: 25px;" rowspan="4">등록용</td>
+						<td style="width: 150px;"><input id="new_device_id" type="text" style="width: 100%" placeholder="device_id" /></td>
+						<td style="width: 600px;"><input id="new_path_status" type="text" style="width: 100%" placeholder="path_status" /></td>
+						<td style="width: 600px;"><input id="new_token" type="text" style="width: 100%" placeholder="token" /></td>
+					</tr>
+					<tr>
+						<td><input id="new_device_name" type="text" style="width: 100%" placeholder="device_name" /></td>
+						<td><input id="new_path_command" type="text" style="width: 100%" placeholder="path_command" /></td>
+						<td><input id="new_api_url" type="text" style="width: 100%" placeholder="api_url" /></td>
+					</tr>
+					<tr>
+						<td><input id="new_ae" type="text" style="width: 100%" placeholder="ae" /></td>
+						<td><input id="new_path_polling" type="text" style="width: 100%" placeholder="path_polling" /></td>
+						<td><input id="new_value" type="text" style="width: 45%" placeholder="status"/><input id="new_button_aceept" type="button" style="width: 45%" value="등록" onclick="javascript:insert();"/></td>
+					</tr>
+					<tr>
+						<td colspan="1" ><input id="new_measurement_device_id" type="text" style="width: 100%" placeholder="measurement_device_id" /></td>
+						<td colspan="2" ><input id="new_measurement" type="text" style="width: 100%" placeholder="measurement" /></td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+		
+		<!-- Smartthings 리스트 -->
+		<tr>
+			<td id="smartthings_list"></td>
+		</tr>
+	</table>
+</body>
+</html>

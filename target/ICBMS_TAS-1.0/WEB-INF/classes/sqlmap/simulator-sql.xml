@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE sqlMap
+    PUBLIC "-//ibatis.apache.org//DTD SQL Map 2.0//EN"
+    "http://ibatis.apache.org/dtd/sql-map-2.dtd">
+    <sqlMap namespace="simulator-sql">
+    
+    <update id="simulatorUpdate" parameterClass="java.util.HashMap">
+		update
+		tb_emulator_mst set
+		id= #id#
+		<isNotEmpty prepend="," property="device_id">
+			device_id = #device_id#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="url">
+			url = #url#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="rtime">
+			rtime = #rtime#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="value">
+			value = #value#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="device_type">
+			device_type = #device_type#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="function_name">
+			function_name = #function_name#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="origin">
+			origin = #origin#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="ctime">
+			ctime = #ctime#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="longvalue">
+			longvalue = #longvalue#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="interval">
+			interval = #interval#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="etc">
+			etc = #etc#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="polling_path">
+			polling_path = #polling_path#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="response_value">
+			response_value = #response_value#
+		</isNotEmpty>
+		<isNotEmpty prepend="," property="response_date">
+			response_date = #response_date#
+		</isNotEmpty>
+		where
+		id= #id#
+	</update>
+	
+    <select id="emtest"  parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+			
+		select * from tb_emulator_mst where 1=1
+		<isNotEmpty  prepend="AND"  property="id" >
+						id like concat('%',#id# ,'%')
+		</isNotEmpty>
+		<isNotEmpty  prepend="AND"  property="uri" >
+						url = #url# 
+		</isNotEmpty>
+	
+    </select>
+    
+    <select id="emtestserver"  parameterClass="java.util.HashMap"  resultClass="java.util.HashMap">
+		select * from tb_emulator_setting where 1=1
+    </select>
+    
+    <insert id="emtestInsert" parameterClass="java.util.HashMap" >
+		insert into tb_emulator_mst
+				(device_id, url, rtime, value, device_type, function_name, origin, etc, interval_time, path_polling, response_value, response_date, longvalue, ctime)
+		values
+				(#device_id#, #url#, #rtime#, #value#, #device_type#, #function_name#, #origin#, #etc#, #interval_time#, #path_polling#, #response_value#, #response_date#, #longvalue#, #ctime#)
+    </insert>
+    
+   	<update id="emtestValueUpdate" parameterClass="java.util.HashMap">
+		UPDATE tb_emulator_mst
+		set value = #value#,
+			etc = #etc#
+		where id = #id#
+	</update>
+    
+   	<update id="emtestLongPollingValueUpdate" parameterClass="java.util.HashMap">
+		UPDATE tb_emulator_mst
+		set interval_time = #interval_time#,
+			response_value = #response_value#,
+			response_date = #response_date#
+		where id = #id#
+	</update>
+   	
+     <delete id="emtestDelete" parameterClass="java.util.HashMap">
+		delete from tb_emulator_mst where id = #id#
+    </delete>
+    <update id="emtestUpdate" parameterClass="java.util.HashMap">
+		UPDATE tb_emulator_setting
+		set ip = #ip#,
+			port = #port#,
+			server_name = #server_name#,
+			in_cse = #in_cse#,
+			emulator_name = #emulator_name#
+	</update>
+ 
+    
+</sqlMap>
