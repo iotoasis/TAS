@@ -51,21 +51,8 @@ public class RepeatJobsListener implements ServletContextListener{
 			e.printStackTrace();
 		}
 
-		//longpollingSchedulerRequest();
-		
-//		NewPixedThreadPoolTest newPixedThreadPoolTest = new NewPixedThreadPoolTest();
-//		newPixedThreadPoolTest.start();;
 
 	}
 
-
-
-
-	public void longpollingSchedulerRequest() throws InterruptedException{
-		Onem2mPost onem2mPost = new Onem2mPost();
-		HashMap hashMap = new HashMap<>();
-		onem2mPost.setData("http://localhost:8080/restartpolling" , "restartpolling", hashMap, null, null);
-		onem2mPost.getData();
-	}
 
 }

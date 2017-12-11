@@ -394,7 +394,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
 
 						
 
-						pollingRestart();
 						buf.append("{");
 						buf.append("\"id\": \"" + "" + "\",");
 						buf.append("\"deviceId\": \"" + "" + "\",");
@@ -479,24 +478,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
 
 	}
 	
-	public void pollingRestart(){
-		if(scheduler != null ){
-
-//			scheduler.endScheduler();
-//			scheduler.currentThread().setName("pollingThread");
-			scheduler.run("restart");
-			
-			tasLog.debug("[ TAS INFO ] :: " + "Longpolling restart!!");
-			
-		}else{
-			
-			scheduler = new LongpollingScheduler();
-//			scheduler.currentThread().setName("pollingThread");
-			scheduler.run("start");
-			
-			tasLog.debug("[ TAS INFO ] :: " + "Longpolling start!!");
-		}
-	}
 	
 	public void pollingKill(){
 		Thread currentThread = Thread.currentThread();

@@ -127,7 +127,7 @@ public class Onem2mPost extends Thread{
 				
 				
 				lbl_apn_api_rn_String = null;
-				mniString = "100";
+				mniString = "1000";
 				mbsString = "1024000";
 				miaString = "36000";
 				etString = "20991231T235959";
