@@ -1,5 +1,6 @@
 package com.onem2m;
 
+import java.util.Calendar;
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -173,7 +174,23 @@ public class Onem2mPost extends Thread{
 				
 				
 				lbl_apn_api_rn_String = "";
-				etString = "20991231T235959";
+				Calendar cCal = Calendar.getInstance();
+
+				int year = Calendar.getInstance().get(Calendar.YEAR);
+				
+				int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
+				
+				int day = Calendar.getInstance().get(Calendar.DATE) + 1;
+				
+				int hour = Calendar.getInstance().get(Calendar.HOUR);
+				
+				int minute = Calendar.getInstance().get(Calendar.MINUTE);
+				
+				int second = Calendar.getInstance().get(Calendar.SECOND);
+				
+				String startDateString = Integer.toString(year) + Integer.toString(month) + Integer.toString(day) + "T" + Integer.toString(hour) + Integer.toString(minute) + Integer.toString(second);
+				
+//				etString = "20991231T235959";
 				cnfString = "text/plain:0";
 				cnfString2 = "application/json:1";
 				conString = "";
@@ -196,7 +213,8 @@ public class Onem2mPost extends Thread{
 				paramString += 		"\"m2m:cin\":";
 				paramString += 		"{";
 				paramString += 			"\"lbl\": [\"" + lbl_apn_api_rn_String + "_Label" + "\"],";
-				paramString += 			"\"et\": \"" + etString +"\",";
+//				paramString += 			"\"et\": \"" + etString +"\","; 2017-12-26 인스턴스 사용제한을 1일 후로 변경
+				paramString += 			"\"et\": \"" + startDateString +"\",";
 				
 				
 //				{ 
@@ -208,7 +226,7 @@ public class Onem2mPost extends Thread{
 					paramString += 			"\"cnf\": \"" + cnfString2 +"\",";
 					String newConString;
 					newConString = "{"
-							+ "\"exec_id\":" + "\"" + "simulator" + "\""+ ","
+							+ "\"exec_id\":" + "\"" + "TAS" + "\""+ ","
 							+ "\"data\":" + "\""+ conString +"\""
 							+ "}";
 					
@@ -322,7 +340,7 @@ public class Onem2mPost extends Thread{
 				paramString += 		"\"m2m:sub\":";
 				paramString += 		"{";
 				paramString += 			"\"lbl\": [\"" + lbl_apn_api_rn_String + "_Label" + "\"],";
-				paramString += 			"\"rn\": \"" + "rulesubscription" +"\",";
+				paramString += 			"\"rn\": \"" + "tassubscription" +"\",";
 				paramString += 			"\"et\": \"" + etString +"\",";
 				paramString += 			"\"enc\":";
 				paramString += 			"{";
@@ -433,35 +451,6 @@ public class Onem2mPost extends Thread{
 		return null;
 		
 	}
-//	public HashMap getAeData(){
-//		return aeResultHashMap;
-//		
-//	}
-//	
-//	public HashMap getContainerData(){
-//		return containerResultHashMap;
-//		
-//	}
-//	
-//	public HashMap getInstanceData(){
-//		return instanceResultHashMap;
-//		
-//	}
-//	
-//	public HashMap getPollingChannelData(){
-//		return pollingChannelresultHashMap;
-//		
-//	}
-//	
-//	public HashMap getSubscriptionData(){
-//		return subscriptionResultHashMap;
-//		
-//	}
-//	
-//	public HashMap getSemanticcommandData(){
-//		return semanticcommandResultHashMap;
-//		
-//	}
 	
 }
 
