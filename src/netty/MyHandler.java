@@ -10,9 +10,7 @@ public class MyHandler extends ChannelDuplexHandler {
            throws Exception {
        if (cause instanceof ReadTimeoutException) {
            // do something
-    	   System.out.println("something timeout!!");
        } else {
-    	   System.out.println("timeout!!");
            super.exceptionCaught(ctx, cause);
        }
    }

@@ -28,7 +28,6 @@ public class Onem2mCheker extends Thread{
 	
 	Onem2mPost onem2mPost = null;
 	Onem2mGet onem2mGet = null;
-	Onem2mPut onem2mPut = null;
 	Onem2mDeleter onem2mDeleter = null;
 
 	String httpString = "http://";
@@ -81,7 +80,6 @@ public class Onem2mCheker extends Thread{
 		if(((Matcher) mc).matches()){
 			for(int i=0;i<=((MatchResult) mc).groupCount();i++);
 		} else {
-			System.out.println("not found");
 		}
 
 

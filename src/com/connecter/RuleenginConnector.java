@@ -247,14 +247,12 @@ public class RuleenginConnector {
 											if(getSignResult(ruleIdSelectList, param)){
 												param.put("rule_value", "on");
 												ruleUpdate(param);
-												System.out.println("상황발생");
 												rulesensordevice(param);
 											}else{
 												
 												param.put("rule_status", "False");
 												param.put("rule_value", "on");
 												ruleUpdate(param);
-												System.out.println("상황미발생");
 											}
 										}
 										//상황 미발생 False
@@ -265,11 +263,9 @@ public class RuleenginConnector {
 												param.put("rule_value", "on");
 												
 												rulesensordevice(param);
-												System.out.println("상황발생");
 											}else{
 												param.put("rule_value", "on");
 												ruleUpdate(param);
-												System.out.println("상황미발생");
 											}
 
 										}
@@ -309,14 +305,12 @@ public class RuleenginConnector {
 												param.put("rule_value", "on");
 												ruleUpdate(param);
 												rulesensordevice(param);
-												System.out.println("상황발생");
 											}else{
 												
 												param.put("rule_status", "False");
 												param.put("rule_value", "on");
 												
 												ruleUpdate(param);
-												System.out.println("상황미발생");
 											}
 										}
 										//상황 미발생
@@ -325,11 +319,9 @@ public class RuleenginConnector {
 												param.put("rule_status", "True");
 												param.put("rule_value", "on");
 												rulesensordevice(param);
-												System.out.println("상황발생");
 											}else{
 												param.put("rule_value", "on");
 												ruleUpdate(param);
-												System.out.println("상황미발생");
 											}
 											
 										}

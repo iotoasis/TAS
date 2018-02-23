@@ -63,17 +63,12 @@ public class HttpURLConnecter extends Thread{
 				
 				return hashMap;
 			}else{
-				System.out.println("[POST ERROR] :: " + "response is null!!"
-				
-				
-				 );
 				return null;
 			}
 			
 		}
 		catch( Exception e )
 		{
-			System.out.println("[POST ERROR] :: " + e );
 			return null;
 		}
 		
@@ -121,17 +116,12 @@ public class HttpURLConnecter extends Thread{
 				
 				return hashMap;
 			}else{
-				System.out.println("[POST ERROR] :: " + "response is null!!"
-				
-				
-				 );
 				return null;
 			}
 			
 		}
 		catch( Exception e )
 		{
-			System.out.println("[POST ERROR] :: " + e );
 			return null;
 		}
 		
@@ -189,10 +179,6 @@ public class HttpURLConnecter extends Thread{
 				array = (JSONArray) jsonParser.parse(isr);
 				
 			}else{
-				System.out.println("[POST ERROR] :: " + "response is null!!"
-				
-				
-				 );
 				return null;
 			}
 			
@@ -202,7 +188,6 @@ public class HttpURLConnecter extends Thread{
 		}
 		catch( Exception e )
 		{
-			System.out.println("[POST ERROR] :: " + e );
 			return null;
 		}
 		

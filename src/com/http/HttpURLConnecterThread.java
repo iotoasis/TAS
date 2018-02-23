@@ -7,14 +7,11 @@ import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.SocketTimeoutException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 import org.json.simple.JSONObject;
 
-import com.activeintra.manager.x;
 import com.onem2m.Onem2mGet;
-import com.schedular.LongpollingScheduler;
 import com.service.utile.MethodTypeSelect;
 
 import netty.HttpSnoopServiceTxt;
@@ -34,7 +31,6 @@ public class HttpURLConnecterThread extends Thread{
 	HttpURLConnection  conn = null;
 	InputStreamReader isr = null;
 	HttpSnoopServiceTxt httpSnoopServiceTxt = null;
-	LongpollingScheduler longpollingScheduler2 = null;
 	Onem2mGet onem2mGet = null;
 	static HashMap hashMap = null;
 	private final static String USER_AGENT = "Mozilla/5.0";
@@ -49,9 +45,7 @@ public class HttpURLConnecterThread extends Thread{
 		this.param = param;
 		this.paramString = paramString;
 		if(callbackObject != null){
-			 if(callbackObject instanceof LongpollingScheduler){
-					this.longpollingScheduler2 = (LongpollingScheduler) callbackObject;
-				}else  if(callbackObject instanceof Onem2mGet){
+			  if(callbackObject instanceof Onem2mGet){
 					this.onem2mGet = (Onem2mGet) callbackObject;
 				}
 		}
@@ -104,9 +98,6 @@ public class HttpURLConnecterThread extends Thread{
 			conn.setDoInput(true);
 			conn.setDoOutput(true);
 			
-			System.out.println(methodTypeSelect + " URL ---> " + urlString);
-			System.out.println(methodTypeSelect + " param ---> " + param);
-			
 			if(MethodTypeSelect.POST == methodTypeSelect){
 				
 				OutputStreamWriter osw = new OutputStreamWriter(conn.getOutputStream(), "UTF-8");
@@ -134,17 +125,7 @@ public class HttpURLConnecterThread extends Thread{
 				hashMap.put("responseMessage", conn.getResponseMessage());
 				
 				
-				if(longpollingScheduler2 != null){
-					if(param.get("ThreadType").equals("status")){
-						
-						this.longpollingScheduler2.statusCallBack(buffer.toString(), param);
-						
-					}else if(param.get("ThreadType").equals("polling")){
-						
-						this.longpollingScheduler2.pollingCallBack(buffer.toString(), param);
-						
-					}
-				}else if(onem2mGet != null){
+				 if(onem2mGet != null){
 						
 						this.onem2mGet.statusCallBack(hashMap);
 						
@@ -155,33 +136,9 @@ public class HttpURLConnecterThread extends Thread{
 			}
 			
 		} catch (SocketTimeoutException e) {
-		                System.out.println("Longpolling SocketTimeoutException !!!!!!!!!!!!!!!!!!!!!!!!!!");
-		                if(longpollingScheduler2 != null){
-							if(param.get("ThreadType").equals("status")){
-								
-								this.longpollingScheduler2.statusCallBack(null, param);
-								
-							}else if(param.get("ThreadType").equals("polling")){
-								
-								this.longpollingScheduler2.pollingCallBack(null, param);
-								
-							}
-						}
 
 		}catch( Exception e )
 		{
-			 System.out.println("Longpolling Exception !!!!!!!!!!!!!!!!!!!!!!!!!!");
-             if(longpollingScheduler2 != null){
-					if(param.get("ThreadType").equals("status")){
-						
-						this.longpollingScheduler2.statusCallBack(null, param);
-						
-					}else if(param.get("ThreadType").equals("polling")){
-						
-						this.longpollingScheduler2.pollingCallBack(null, param);
-						
-					}
-				}
 			try {
 				if(conn != null && conn.getResponseMessage() != null){
 					if(hashMap == null){
@@ -189,7 +146,6 @@ public class HttpURLConnecterThread extends Thread{
 					}
 					hashMap.put("responseCode", Integer.toString(conn.getResponseCode()));
 					hashMap.put("responseMessage", e.getLocalizedMessage());
-					System.out.println("[POST ERROR CODE] :: " + conn.getResponseCode() + " --> " +  e.getLocalizedMessage());
 				}
 				
 			} catch (IOException e2) {

@@ -16,7 +16,6 @@ import com.onem2m.Onem2mCheker;
 import com.onem2m.Onem2mDeleter;
 import com.onem2m.Onem2mGet;
 import com.onem2m.Onem2mPost;
-import com.schedular.LongpollingScheduler;
 import com.service.utile.MethodTypeSelect;
 import com.service.utile.Onem2mThingsTypeSelect;
 
@@ -77,7 +76,6 @@ public class SIConnecter extends Thread{
 
 			}
 			else {
-				System.out.println("not found");
 			}
 			JSONObject jsonResultObject = new JSONObject();
 
@@ -322,15 +320,12 @@ public class SIConnecter extends Thread{
 
 
 			case "timeout":
-				System.out.println("wait start");
 				
 				for(int i=0 ; i< 40; i ++){
 					Thread.sleep(1000);
-					System.out.println("1 Second Sleep !!");
 				}
 				
 				
-				System.out.println("wait end");
 				break;
 				
 			default:

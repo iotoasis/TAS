@@ -44,7 +44,6 @@ public class HttpSnoopServerInitializer extends ChannelInitializer<SocketChannel
 				ctx.write("timeout !");
 				
 				super.exceptionCaught(ctx, cause);
-				System.out.println("Netty Timeout!!");
 			} else {
 				super.exceptionCaught(ctx, cause);
 			}

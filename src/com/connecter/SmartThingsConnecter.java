@@ -385,7 +385,6 @@ public class SmartThingsConnecter extends Thread{
 
 								}
 								else {
-									System.out.println("not found");
 								}
 								
 								
@@ -477,7 +476,6 @@ public class SmartThingsConnecter extends Thread{
 
 								}
 								else {
-									System.out.println("not found");
 								}
 								
 								
@@ -636,7 +634,6 @@ public class SmartThingsConnecter extends Thread{
 
 								}
 								else {
-									System.out.println("not found");
 								}
 								
 								

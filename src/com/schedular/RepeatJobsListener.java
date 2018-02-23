@@ -1,37 +1,23 @@
 package com.schedular;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-
-import com.common.SQLManager;
-import com.ibatis.sqlmap.client.SqlMapClient;
-import com.onem2m.Onem2mPost;
 
 import netty.HttpSnoopServer;
 
 public class RepeatJobsListener implements ServletContextListener{
 
 	HttpSnoopServer httpSnoopServer = null;
-	LongpollingScheduler scheduler = null;
-
+	
 	@Override
 	public void contextDestroyed(ServletContextEvent arg0) {
 		httpSnoopServer.stop();
-		System.out.println("scheduler stop !!");
 	}
 
 
 	public void restart(){
 		httpSnoopServer.stop();
-		System.out.println("scheduler stop !!");
 		httpSnoopServer.start();
-		System.out.println("scheduler start !!");
 	}
 
 	@Override

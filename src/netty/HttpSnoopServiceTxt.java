@@ -21,7 +21,6 @@ import org.json.simple.parser.ParseException;
 import com.connecter.RuleenginConnector;
 import com.connecter.SIConnecter;
 import com.connecter.SmartThingsConnecter;
-import com.schedular.LongpollingScheduler;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -42,8 +41,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
 
 	static HttpSnoopServiceTxt httpSnoopServiceTxt = null;
 
-	LongpollingScheduler scheduler = null;
-	
 	private LastHttpContent trailer = null;
 
 	private FullHttpRequest request;
@@ -463,7 +460,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
 			response.headers().set(CONTENT_LENGTH, response.content().readableBytes());
 			response.headers().set(CONNECTION, HttpHeaders.Values.KEEP_ALIVE);
 		}
-		//        System.out.println(jsonObject.toString());
 		ctx.write(response);
 
 		return keepAlive;
@@ -473,8 +469,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
 	public void callBack(String string) {
 
 		tasLog.debug("[ TAS INFO ] :: " + "Call Back String !!");
-
-		System.out.println(string);
 
 	}
 	
@@ -486,13 +480,11 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
             threadGroup = threadGroup.getParent();
         }
         int activeCount = threadGroup.activeCount();
-        System.out.println("activeCount: " + activeCount);
         // NOTE:
         // The number of thread is changing so additional 5 is for guaranteeing
         // enough space.
         Thread[] activeThreads = new Thread[activeCount + 5];
         int enumeratedCount = threadGroup.enumerate(activeThreads);
-        System.out.println("enumeratedCount: " + enumeratedCount);
         for (int i = 0; i < enumeratedCount; i++) {
             if (activeThreads[i].getName().equals("pollingThread")) {
             	ThreadGroup rootGroup = Thread.currentThread().getThreadGroup();
@@ -508,7 +500,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
             	 
             	for (Thread t : threads) {
             	    if (t.getId() == activeThreads[i].getId()) {
-            	        System.out.println("found!!!!!");
             	    }
             	}
 

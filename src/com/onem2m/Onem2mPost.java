@@ -175,20 +175,50 @@ public class Onem2mPost extends Thread{
 				
 				lbl_apn_api_rn_String = "";
 				Calendar cCal = Calendar.getInstance();
+				cCal.add(Calendar.DATE, 3); //3일후
+				
+				String year = "2019";
+				String month = "01";
+				String day = "01";
+				String hour = "01";
+				String minute = "01";
+				String second = "01";
+				
+				year = Integer.toString(cCal.get(Calendar.YEAR));
+				
+				if(cCal.get(Calendar.MONTH) + 1 < 10){
+					month = "0" + Integer.toString(cCal.get(Calendar.MONTH) + 1);
+				}else{
+					month = Integer.toString(cCal.get(Calendar.MONTH) + 1);
+				}
+				
+				if(cCal.get(Calendar.DATE) < 10){
+					day = "0" + Integer.toString(cCal.get(Calendar.DATE));
+				}else{
+					day = Integer.toString(cCal.get(Calendar.DATE));
+				}
+				
+				if(cCal.get(Calendar.HOUR_OF_DAY) < 10){
+					hour = "0" + Integer.toString(cCal.get(Calendar.HOUR_OF_DAY));
+				}else{
+					hour = Integer.toString(cCal.get(Calendar.HOUR_OF_DAY));
+				}
+				
+				if(cCal.get(Calendar.MINUTE) < 10){
+					minute = "0" + Integer.toString(cCal.get(Calendar.MINUTE));
+				}else{
+					minute = Integer.toString(cCal.get(Calendar.MINUTE));
+				}
+				
+				if(cCal.get(Calendar.SECOND) < 10){
+					second = "0" + Integer.toString(cCal.get(Calendar.SECOND));
+				}else{
+					second = Integer.toString(cCal.get(Calendar.SECOND));
+				}
+				
+				String startDateString = "20991231T235959";
 
-				int year = Calendar.getInstance().get(Calendar.YEAR);
-				
-				int month = Calendar.getInstance().get(Calendar.MONTH) + 1;
-				
-				int day = Calendar.getInstance().get(Calendar.DATE) + 1;
-				
-				int hour = Calendar.getInstance().get(Calendar.HOUR);
-				
-				int minute = Calendar.getInstance().get(Calendar.MINUTE);
-				
-				int second = Calendar.getInstance().get(Calendar.SECOND);
-				
-				String startDateString = Integer.toString(year) + Integer.toString(month) + Integer.toString(day) + "T" + Integer.toString(hour) + Integer.toString(minute) + Integer.toString(second);
+				startDateString = year + month + day + "T" + hour + minute + second;
 				
 //				etString = "20991231T235959";
 				cnfString = "text/plain:0";
