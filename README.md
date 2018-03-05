@@ -5,14 +5,12 @@
 
 TAS oneM2M Server is a server framework that supports 3'rd party device interworking, but does not support oneM2M as an IoT international standard. Using a TAS oneM2M Server source, you can develop the devices that do not support oneM2M to interwork with the Oasis SI server. The corresponding Open Source that is TAS Emulator Source provides a function to connect the device to oneM2M Server in the imagination.
 
-  •	Feature
-    -	oneM2M Unsupported Device Interface Function Support
-    - oneM2M Mca Reference point support
-    -	SO, SDA Interworking function support
-    -	Manage MariaDB-based resource data management
-    
-
-
+ - Feature
+   - oneM2M Unsupported Device Interface Function Support
+   - oneM2M Mca Reference point support
+   - SO, SDA Interworking function support
+   - Manage MariaDB-based resource data management
+   
 ## Usage
 1. Insert the source to the Eclipse
 2. Export the source to .war format.
