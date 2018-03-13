@@ -357,7 +357,12 @@ public class Onem2mPost extends Thread{
 				lbl_apn_api_rn_String = "";
 				etString = "20991231T235959";
 				netString = "1,2,3,4";
-				nuString = headerMashMap.get("subscription_url");
+				
+				
+				if(headerMashMap.get("subscription_url") != null){
+					nuString = headerMashMap.get("subscription_url");
+				}
+				
 				if(headerMashMap != null && headerMashMap.get("ae") != null){
 					lbl_apn_api_rn_String = headerMashMap.get("ae");
 				}

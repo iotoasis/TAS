@@ -86,7 +86,6 @@ public class HttpSnoopServiceTxt extends SimpleChannelInboundHandler<Object> {
 
 
 		if (msg instanceof FullHttpRequest) {
-			tasLog.debug("[ RESPONSE ADDRESS ] ::" +  ctx.channel());
 			tasLog.debug("[ RESPONSE HEADER ] ::" +  msg);
 			//header
 			FullHttpRequest request = (FullHttpRequest) (this.request = (FullHttpRequest) msg);

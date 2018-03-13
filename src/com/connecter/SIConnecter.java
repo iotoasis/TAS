@@ -321,9 +321,9 @@ public class SIConnecter extends Thread{
 
 			case "timeout":
 				
-				for(int i=0 ; i< 40; i ++){
-					Thread.sleep(1000);
-				}
+//				for(int i=0 ; i< 40; i ++){
+//					Thread.sleep(1000);
+//				}
 				
 				
 				break;
