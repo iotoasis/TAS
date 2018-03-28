@@ -82,7 +82,7 @@ public class Onem2mPost extends Thread{
 				paramString = null;
 				
 				lbl_apn_api_rn_String = null;
-				poaString = "166.104.112.34:8080";
+				poaString = "166.104.110.104:8080";
 				rrString = "FALSE";
 				etString = "20991231T235959";
 				

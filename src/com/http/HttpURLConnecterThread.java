@@ -75,12 +75,6 @@ public class HttpURLConnecterThread extends Thread{
 			}
 			
 			
-//			for(int i = 0; i < param.keySet().size(); i++){
-//				Object[] x = param.keySet().toArray();
-//				if(x[i] != null && param.get(x[i].toString()) != null){
-//					conn.setRequestProperty(x[i].toString(), param.get(x[i].toString()));
-//				}
-//			}
 			if(param != null && param.get("X-M2M-Origin") != null){
 				conn.setRequestProperty("X-M2M-Origin", param.get("X-M2M-Origin"));
 			}
